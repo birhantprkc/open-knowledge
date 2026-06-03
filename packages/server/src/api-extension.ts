@@ -3210,6 +3210,7 @@ export function createApiExtension(options: ApiExtensionOptions): Extension {
 
         let editError: import('@inkeep/open-knowledge-core').FmEditError | undefined;
         let applied = false;
+        let bodyMutated = false;
         const appliedKeys: string[] = [];
 
         try {
@@ -3255,6 +3256,7 @@ export function createApiExtension(options: ApiExtensionOptions): Extension {
                     result.nextFenced + (needsFenceSeparator ? '\n' : '') + currentBody;
                   composeAndWriteRawBody(session.dc.document, newFull, 'agent');
                   recordFrontmatterEditSurface('mcp-write');
+                  bodyMutated = true;
                 }
                 applied = true;
               }, session.origin);
@@ -3321,6 +3323,13 @@ export function createApiExtension(options: ApiExtensionOptions): Extension {
           );
           incrementAgentWriteCalls();
           countNormalizedSummary(normalizedSummary);
+          if (bodyMutated) {
+            const storeFailure = await flushDiskAndDetectFailure(resolvedDocName);
+            if (storeFailure) {
+              respondPersistenceFailure(res, storeFailure, 'frontmatter-patch');
+              return;
+            }
+          }
           flushDocToGit(resolvedDocName, 'frontmatter-patch');
         }
 
@@ -4332,6 +4341,12 @@ export function createApiExtension(options: ApiExtensionOptions): Extension {
             'Frontmatter edits are not supported via edit_document. Use write_document with position:"replace" to rewrite the document including its YAML block.',
             { handler: 'agent-patch' },
           );
+          return;
+        }
+
+        const storeFailure = await flushDiskAndDetectFailure(docName);
+        if (storeFailure) {
+          respondPersistenceFailure(res, storeFailure, 'agent-patch');
           return;
         }
 
@@ -5356,6 +5371,12 @@ export function createApiExtension(options: ApiExtensionOptions): Extension {
           }
         }
         renameAttributionCounter().add(1, { kind: 'rollback', attribution_kind: actor.kind });
+
+        const storeFailure = await flushDiskAndDetectFailure(docName);
+        if (storeFailure) {
+          respondPersistenceFailure(res, storeFailure, 'rollback');
+          return;
+        }
 
         flushDocToGit(docName, 'rollback');
 
