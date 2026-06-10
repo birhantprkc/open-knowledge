@@ -1,4 +1,4 @@
-// biome-ignore-all lint/plugin/no-raw-html-interactive-element: pre-rule backlog — file uses raw <button>/<input>/<textarea> awaiting shadcn migration; tracked at https://github.com/inkeep/open-knowledge-legacy/blob/main/biome-plugins/README.md#no-raw-html-interactive-elementgrit
+// biome-ignore-all lint/plugin/no-raw-html-interactive-element: pre-rule backlog — file uses raw <button>/<input>/<textarea> awaiting shadcn migration; tracked at https://github.com/inkeep/open-knowledge/blob/main/biome-plugins/README.md#no-raw-html-interactive-elementgrit
 
 import {
   DndContext,
@@ -592,12 +592,7 @@ export function EditorTabs() {
       )}
       onWheel={scrollTabListOnWheel}
     >
-      <div
-        className={cn(
-          'flex items-end gap-1',
-          isElectronHost && '[-webkit-app-region:no-drag]',
-        )}
-      >
+      <div className={cn('flex items-end gap-1', isElectronHost && '[-webkit-app-region:no-drag]')}>
         <DndContext
           sensors={sensors}
           autoScroll={TAB_REORDER_AUTO_SCROLL}
