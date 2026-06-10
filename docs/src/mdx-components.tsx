@@ -10,8 +10,10 @@ import { AgentIcons } from '@/components/agent-icons';
 import { CopyPrompt } from '@/components/copy-prompt';
 import { CtaButton } from '@/components/cta-button';
 import { DownloadButton } from '@/components/download-button';
+import { McpInstall } from '@/components/mcp-install';
 import { Mermaid } from '@/components/mermaid';
-import { LayerStack, QuickstartCTA, WhereToStart } from '@/components/overview-blocks';
+import { LayerStack, WhereToStart } from '@/components/overview-blocks';
+import { VerifyExec } from '@/components/verify-exec';
 
 export function getMDXComponents(): MDXComponents {
   return {
@@ -26,13 +28,14 @@ export function getMDXComponents(): MDXComponents {
     DownloadButton,
     Image: ImageZoom,
     LayerStack,
+    McpInstall,
     Mermaid,
-    QuickstartCTA,
     Step,
     Steps,
     WhereToStart,
     Tab,
     Tabs,
     TypeTable,
+    VerifyExec,
   };
 }

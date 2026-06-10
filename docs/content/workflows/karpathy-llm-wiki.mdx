@@ -117,9 +117,7 @@ The starter-pack picker is idempotent (safe to re-run on the same project).
 
 If you accepted the desktop app's first-launch offer to wire up your agent assistant, you're done. If not, in your agent assistant ([Claude Code](../integrations/claude-code.mdx), [Cursor](../integrations/cursor.mdx), or [Codex](../integrations/codex.mdx)), ask:
 
-```
-> list the workflow tools available
-```
+<CopyPrompt>list the workflow tools available</CopyPrompt>
 
 You should see `mcp__open-knowledge__workflow` (its `kind` covers `ingest` / `research` / `consolidate` / `discover`), alongside the standard reads/writes (`exec`, `search`, `write`, `links`, etc.). The workflow guides cover the sources → provisional → canonical pipeline described in the mapping table above.
 
@@ -127,33 +125,25 @@ You should see `mcp__open-knowledge__workflow` (its `kind` covers `ingest` / `re
 
 For each source, paste the URL into your agent and say:
 
-```
-> ingest this: https://github.com/example/framework
-```
+<CopyPrompt>ingest this: https://github.com/example/framework</CopyPrompt>
 
 The agent fetches the URL, calls `ingest`, and writes the verbatim content to `external-sources/framework-readme.md` with frontmatter capturing the URL, fetch date, and any author metadata it can extract. **Never copy-paste raw URLs into chat as "sources" without ingesting.** The knowledge base is closed-loop. Every claim must cite a local doc.
 
 Five ingests, five files. After the fifth, ask:
 
-```
-> what's in external-sources/, summary of each
-```
+<CopyPrompt>what's in external-sources/, summary of each</CopyPrompt>
 
 Your agent uses `exec("ls external-sources/")` to read frontmatter and per-file summaries.
 
 ### 5. Synthesize into a research log
 
-```
-> research the agent-framework question; synthesize the five sources in external-sources/
-```
+<CopyPrompt>research the agent-framework question; synthesize the five sources in external-sources/</CopyPrompt>
 
 Running `workflow({ kind: "research", topic: "agent-framework evaluation" })` spins up a step-by-step research flow: it confirms scoping, lists what's covered by the existing sources, identifies gaps (maybe one source you haven't ingested yet), and produces a `research/agent-framework-evaluation.md` with `status: provisional` and a `sources:` array listing the five paths.
 
 Every claim in the log cites a specific source path. You can now ask:
 
-```
-> what does the framework do when two sub-agents race on the same write?
-```
+<CopyPrompt>what does the framework do when two sub-agents race on the same write?</CopyPrompt>
 
 The agent reads `research/agent-framework-evaluation.md` first, follows the citation chain into `external-sources/`, and returns a synthesized answer with traceable evidence.
 
@@ -171,9 +161,7 @@ Result: the agent learns each layer's discipline without a separate prompt or sk
 
 You don't consolidate yet in our scenario; the team hasn't decided. Maybe in two weeks you adopt the framework. Then:
 
-```
-> consolidate the agent-framework research into a canonical article
-```
+<CopyPrompt>consolidate the agent-framework research into a canonical article</CopyPrompt>
 
 The `workflow` tool's `consolidate` kind starts with a STOP gate asking whether the decision is actually made. If yes, it writes `articles/agent-framework-evaluation.md` with `status: canonical` and a `supersedes:` chain pointing back to the research log. That `research/` doc isn't deleted; it's superseded, so the evidence chain stays intact.
 

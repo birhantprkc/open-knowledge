@@ -126,26 +126,3 @@ export function WhereToStart() {
     </div>
   );
 }
-
-export function QuickstartCTA() {
-  return (
-    <div className="ok-overview not-prose mt-10 flex flex-col items-start justify-between gap-5 rounded-2xl border border-fd-border bg-fd-card px-[26px] py-6 shadow-sm sm:flex-row sm:items-center sm:gap-6">
-      <div>
-        <span className="block text-base font-semibold text-fd-foreground">Quickstart</span>
-        <span className="text-sm text-fd-muted-foreground">
-          From install to your first agent-driven edit in under five minutes.
-        </span>
-      </div>
-      <a
-        href="/docs/get-started/quickstart"
-        className="inline-flex shrink-0 items-center gap-2 rounded-[10px] px-[18px] py-[11px] text-[14.5px] font-semibold text-white no-underline"
-        style={{
-          background: 'var(--ok-accent)',
-          boxShadow: '0 2px 8px color-mix(in oklch, var(--ok-accent) 40%, transparent)',
-        }}
-      >
-        Get started <ArrowRight className="size-[15px]" aria-hidden="true" />
-      </a>
-    </div>
-  );
-}

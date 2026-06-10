@@ -10,9 +10,15 @@ export default async function Page(props: PageProps<'/docs/[...slug]'>) {
   if (!page) notFound();
 
   const MDX = page.data.body;
+  const hideFooter = page.data.footer === false;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage
+      toc={page.data.toc}
+      full={page.data.full}
+      footer={hideFooter ? { enabled: false } : undefined}
+      article={hideFooter ? { className: 'pb-12' } : undefined}
+    >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>

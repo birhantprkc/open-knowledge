@@ -1,23 +1,21 @@
 ---
-title: Claude Code
-description: Use Open Knowledge with Claude Code.
+title: Claude Code CLI
+description: Use Open Knowledge with the Claude Code CLI.
 ---
 
 Open Knowledge works with Claude Code Agent via MCP and Skills.
 
 ## Install
 
-The Open Knowledge desktop app handles wiring. On first launch (or any time you open a project for the first time), the consent dialog detects Claude Code on your machine, lists it as one of the editors it can configure, and writes the MCP server entry plus the project skill for you.
-
-It registers the MCP server in Claude Code's user config (`~/.claude.json`) and project config (`.mcp.json`), and installs a skill at `.claude/skills/open-knowledge/SKILL.md`. Re-trigger the dialog by deleting `~/.ok/mcp-status.json` and relaunching.
+<McpInstall editor="Claude Code" />
 
 ## Verify
 
 Open the project in Claude Code and ask:
 
-> List all the docs in this project.
+<VerifyExec subject="Claude Code" />
 
-Claude Code should call `exec` (e.g. `ls`) and respond with your knowledge base. If Claude Code doesn't use the Open Knowledge `exec` tool, restart Claude Code so it picks up the new MCP entry.
+If Claude Code doesn't use the Open Knowledge `exec` tool, restart Claude Code so it picks up the new MCP entry.
 
 ## Live editing
 
