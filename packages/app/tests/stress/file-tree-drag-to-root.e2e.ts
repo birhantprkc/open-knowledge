@@ -145,7 +145,10 @@ test.describe('file-tree drag-to-root (PRD-7043)', () => {
       absent: 'parent/child/note',
     });
 
-    await expect(sidebar.getByRole('treeitem', { name: 'child', exact: true })).toBeVisible({
+    await expect(sidebar.locator('[role="treeitem"][data-item-path="child/"]')).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(sidebar.getByRole('treeitem', { name: 'child', exact: true })).toHaveCount(1, {
       timeout: 10_000,
     });
   });
@@ -174,7 +177,10 @@ test.describe('file-tree drag-to-root (PRD-7043)', () => {
 
     await expectDocNames(page, workerServer.baseURL, { present: 'note', absent: 'folder/note' });
 
-    await expect(sidebar.getByRole('treeitem', { name: 'note.md', exact: true })).toBeVisible({
+    await expect(sidebar.locator('[role="treeitem"][data-item-path="note.md"]')).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(sidebar.getByRole('treeitem', { name: 'note.md', exact: true })).toHaveCount(1, {
       timeout: 10_000,
     });
   });
