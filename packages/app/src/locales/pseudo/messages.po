@@ -330,7 +330,7 @@ msgid "{tokens, plural, one {token} other {tokens}}"
 msgstr ""
 
 #: src/components/FileTree.tsx
-msgid "{truncatedShownCount, plural, one {Showing the first item in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.} other {Showing the first {formattedCount} items in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.}}"
+msgid "{truncatedShownCount, plural, one {Showing the first item in one folder — the rest of that folder is hidden.} other {Showing the first {formattedCount} items in one folder — the rest of that folder is hidden.}}"
 msgstr ""
 
 #: src/components/FileTree.tsx
@@ -5129,11 +5129,6 @@ msgstr ""
 
 #: src/components/settings/OkignoreSection.tsx
 msgid "Show advanced"
-msgstr ""
-
-#: src/components/FileSidebar.tsx
-#: src/components/FileTree.tsx
-msgid "Show all files"
 msgstr ""
 
 #: src/components/GraphPanel.tsx

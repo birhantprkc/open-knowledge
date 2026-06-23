@@ -36,7 +36,6 @@ type OkMenuAction =
   | 'copy-full-path'
   | 'copy-relative-path'
   | 'toggle-show-hidden-files'
-  | 'toggle-show-all-files'
   | 'expand-all-tree'
   | 'collapse-all-tree'
   | 'toggle-doc-panel'
@@ -377,7 +376,6 @@ type OkEditorActiveTargetSnapshot =
 
 interface OkEditorViewMenuStateSnapshot {
   readonly showHiddenFiles: boolean;
-  readonly showAllFiles: boolean;
   readonly canExpandAll: boolean;
   readonly canCollapseAll: boolean;
   readonly sidebarVisible: boolean;

@@ -10,7 +10,6 @@ export const MENU_LABELS = {
   fullPath: 'Full path',
   relativePath: 'Relative path',
   showHiddenFiles: 'Show hidden files',
-  showAllFiles: 'Show all files',
   expandAll: 'Expand all',
   collapseAll: 'Collapse all',
 } as const;

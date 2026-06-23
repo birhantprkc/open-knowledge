@@ -192,7 +192,7 @@ mock.module('@/hooks/use-folder-config', () => ({
 mock.module('@/lib/config-provider', () => ({
   useConfigContext: () => ({
     projectLocalBinding: { patch: projectLocalPatch },
-    merged: { appearance: { sidebar: { showHiddenFiles: false, showAllFiles: true } } },
+    merged: { appearance: { sidebar: { showHiddenFiles: false } } },
   }),
 }));
 
@@ -358,12 +358,8 @@ describe('FileSidebar menu-action runtime routing', () => {
     );
 
     menuActionCallback?.('toggle-show-hidden-files' as MenuAction);
-    menuActionCallback?.('toggle-show-all-files' as MenuAction);
     expect(projectLocalPatch).toHaveBeenCalledWith({
       appearance: { sidebar: { showHiddenFiles: true } },
-    });
-    expect(projectLocalPatch).toHaveBeenCalledWith({
-      appearance: { sidebar: { showAllFiles: false } },
     });
   });
 
@@ -375,7 +371,6 @@ describe('FileSidebar menu-action runtime routing', () => {
         expect.objectContaining({
           canCollapseAll: true,
           canExpandAll: true,
-          showAllFiles: true,
           showHiddenFiles: false,
           sidebarVisible: true,
         }),

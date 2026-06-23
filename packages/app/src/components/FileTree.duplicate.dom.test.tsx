@@ -206,13 +206,14 @@ let duplicateStatus = 200;
 let duplicateGate: Promise<void> | null = null;
 let duplicateFetchError: Error | null = null;
 let fetchCalls: FetchCall[] = [];
+let extraDocuments: FileEntry[] = [];
 let okignoreBindingMock: {
   current: () => string;
   patch: ReturnType<typeof mock>;
 } | null = null;
 let projectLocalBindingMock: { patch: ReturnType<typeof mock> } | null = null;
 let mergedConfigMock: {
-  appearance?: { sidebar?: { showHiddenFiles?: boolean; showAllFiles?: boolean } };
+  appearance?: { sidebar?: { showHiddenFiles?: boolean } };
 } | null = null;
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -244,7 +245,8 @@ function makeFetchMock() {
   return mock(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     fetchCalls.push({ url, init });
-    if (url.startsWith('/api/documents')) return jsonResponse({ documents: DOCUMENTS });
+    if (url.startsWith('/api/documents'))
+      return jsonResponse({ documents: [...DOCUMENTS, ...extraDocuments] });
     if (url === '/api/workspace') {
       return jsonResponse({
         contentDir: '/tmp/open-knowledge',
@@ -255,6 +257,12 @@ function makeFetchMock() {
     if (url === '/api/duplicate-path') {
       if (duplicateGate) await duplicateGate;
       if (duplicateFetchError) throw duplicateFetchError;
+      const dup = duplicateResponse as { kind?: string; path?: string } | undefined;
+      if (duplicateStatus === 200 && dup?.kind === 'folder' && typeof dup.path === 'string') {
+        extraDocuments = [
+          { kind: 'folder', path: dup.path, size: 0, modified: '2026-05-18T00:00:00.000Z' },
+        ];
+      }
       return jsonResponse(duplicateResponse, duplicateStatus);
     }
     throw new Error(`unexpected fetch: ${url}`);
@@ -434,9 +442,10 @@ describe('FileTree duplicate action runtime behavior', () => {
     duplicateGate = null;
     duplicateFetchError = null;
     fetchCalls = [];
+    extraDocuments = [];
     okignoreBindingMock = null;
     projectLocalBindingMock = null;
-    mergedConfigMock = { appearance: { sidebar: { showAllFiles: false } } };
+    mergedConfigMock = null;
     globalThis.fetch = makeFetchMock() as unknown as typeof fetch;
     toastSuccessMock.mockClear();
     toastErrorMock.mockClear();
@@ -559,7 +568,7 @@ describe('FileTree duplicate action runtime behavior', () => {
     expect(closeMenuMock).toHaveBeenCalled();
   });
 
-  test('folder context menu exposes runtime order, subtree actions, visibility toggles, and folder hide', async () => {
+  test('folder context menu exposes runtime order, subtree actions, visibility toggle, and folder hide', async () => {
     menuItem = { kind: 'directory', path: 'notes/' };
     okignoreBindingMock = {
       current: () => '',
@@ -567,7 +576,7 @@ describe('FileTree duplicate action runtime behavior', () => {
     };
     projectLocalBindingMock = { patch: mock(() => ({ ok: true })) };
     mergedConfigMock = {
-      appearance: { sidebar: { showHiddenFiles: true, showAllFiles: false } },
+      appearance: { sidebar: { showHiddenFiles: true } },
     };
     const user = userEvent.setup();
     renderFileTree();
@@ -580,7 +589,6 @@ describe('FileTree duplicate action runtime behavior', () => {
       /Open with AI/,
       /Copy path/,
       /Show hidden files/,
-      /Show all files/,
       /Expand all/,
       /Duplicate/,
       /Rename/,
@@ -589,14 +597,8 @@ describe('FileTree duplicate action runtime behavior', () => {
     ]);
 
     const showHidden = screen.getByTestId('file-tree-menu-show-hidden-files');
-    const showAll = screen.getByTestId('file-tree-menu-show-all-files');
     expect(showHidden.getAttribute('aria-checked')).toBe('true');
-    expect(showAll.getAttribute('aria-checked')).toBe('false');
 
-    await user.click(showAll);
-    expect(projectLocalBindingMock.patch).toHaveBeenCalledWith({
-      appearance: { sidebar: { showAllFiles: true } },
-    });
     await user.click(showHidden);
     expect(projectLocalBindingMock.patch).toHaveBeenCalledWith({
       appearance: { sidebar: { showHiddenFiles: false } },

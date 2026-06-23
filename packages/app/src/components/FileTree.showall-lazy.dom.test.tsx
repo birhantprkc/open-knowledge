@@ -13,7 +13,7 @@ function PassThrough({ children }: { children?: ReactNode }) {
 
 const SHOW_ALL_DEPTH1_URL = '/api/documents?showAll=true&dir=&depth=1';
 
-let mergedConfig: unknown = { appearance: { sidebar: { showAllFiles: true } } };
+let mergedConfig: unknown = { appearance: { sidebar: {} } };
 let showAllResponseFactory: () => Response = () => jsonResponse({ documents: [] });
 let responseByUrl = new Map<string, (init?: RequestInit) => Response | Promise<Response>>();
 const fetchUrls: string[] = [];
@@ -258,7 +258,7 @@ describe('FileTree showAll lazy root seed', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () => jsonResponse({ documents: [] });
     responseByUrl = new Map();
     fetchUrls.length = 0;
@@ -293,7 +293,7 @@ describe('FileTree showAll lazy root seed', () => {
     );
   });
 
-  test('unresolved config still seeds the showAll root — Show all files is the default', async () => {
+  test('unresolved config still seeds the disk-walk root — it is the only listing mode', async () => {
     mergedConfig = null;
     showAllResponseFactory = () =>
       jsonResponse({
@@ -306,6 +306,26 @@ describe('FileTree showAll lazy root seed', () => {
     await waitFor(() => expect(fetchUrls).toContain(SHOW_ALL_DEPTH1_URL));
     expect(fetchUrls).not.toContain('/api/documents');
     await waitFor(() => expect([...model.items.keys()].sort()).toEqual(['README.md', 'team/']));
+  });
+
+  test('Show hidden files alone gates dot-segment entries in the disk-walk listing', async () => {
+    mergedConfig = { appearance: { sidebar: { showHiddenFiles: false } } };
+    showAllResponseFactory = () =>
+      jsonResponse({
+        documents: [docEntry('README'), docEntry('.secret-note')],
+        truncated: false,
+      });
+    const view = render(<FileTree />);
+
+    await screen.findByTestId('fake-pierre-tree');
+    await waitFor(() => expect(model.items.has('README.md')).toBe(true));
+    expect(model.items.has('.secret-note.md')).toBe(false);
+
+    mergedConfig = { appearance: { sidebar: { showHiddenFiles: true } } };
+    view.rerender(<FileTree />);
+
+    await waitFor(() => expect(model.items.has('.secret-note.md')).toBe(true));
+    expect(model.items.has('README.md')).toBe(true);
   });
 
   test('seeded folders are directory items for both hasChildren values; documents are files', async () => {
@@ -371,23 +391,13 @@ describe('FileTree showAll lazy root seed', () => {
     await screen.findByText('Folder walk failed mid-stream');
     expect(screen.queryByText('Could not reach server')).toBeNull();
   });
-
-  test('Show All OFF keeps the index-backed fetch byte-for-byte unchanged', async () => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: false } } };
-    render(<FileTree />);
-
-    await screen.findByTestId('fake-pierre-tree');
-    expect(fetchUrls).toContain('/api/documents');
-    expect(fetchUrls.some((u) => u.includes('showAll') || u.includes('depth='))).toBe(false);
-    expect([...model.items.keys()]).toEqual(['notes/a.md']);
-  });
 });
 
 describe('FileTree showAll lazy folder expansion', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () =>
       jsonResponse({
         documents: [folderEntry('team', true), folderEntry('empty', false), docEntry('README')],
@@ -595,7 +605,7 @@ describe('FileTree showAll scoped refresh', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () =>
       jsonResponse({
         documents: [folderEntry('team', true), folderEntry('empty', false), docEntry('README')],
@@ -689,29 +699,6 @@ describe('FileTree showAll scoped refresh', () => {
     expect(model.getItem('team/')?.isExpanded()).toBe(true);
   });
 
-  test('toggling Show All OFF returns to the index listing; back ON re-seeds the lazy root (QA-007)', async () => {
-    const view = await renderTreeWithTeamLoaded();
-
-    mergedConfig = { appearance: { sidebar: { showAllFiles: false } } };
-    const beforeOff = fetchUrls.length;
-    view.rerender(<FileTree />);
-
-    await waitFor(() => expect([...model.items.keys()]).toEqual(['notes/a.md']));
-    expect(fetchUrls.slice(beforeOff).filter((url) => url.startsWith('/api/documents'))).toEqual([
-      '/api/documents',
-    ]);
-
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
-    const beforeOn = fetchUrls.length;
-    view.rerender(<FileTree />);
-
-    await waitFor(() => expect(model.items.has('team/')).toBe(true));
-    expect([...model.items.keys()].sort()).toEqual(['README.md', 'empty/', 'team/']);
-    expect(fetchUrls.slice(beforeOn).filter((url) => url.startsWith('/api/documents'))).toEqual([
-      SHOW_ALL_DEPTH1_URL,
-    ]);
-  });
-
   test('a burst of files signals coalesces into one trailing revalidation pass', async () => {
     await renderTreeWithTeamLoaded();
     responseByUrl.set(
@@ -795,7 +782,7 @@ describe('FileTree relaunch-aware reconnect (desktop auto-update)', () => {
   let detachRelaunch: () => void;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () =>
       jsonResponse({ documents: [docEntry('README')], truncated: false });
     responseByUrl = new Map();

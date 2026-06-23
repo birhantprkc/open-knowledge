@@ -35,9 +35,7 @@ export interface MenuDeps {
   onCopyFullPath?(): void;
   onCopyRelativePath?(): void;
   showHiddenFilesChecked?: boolean;
-  showAllFilesChecked?: boolean;
   onToggleShowHiddenFiles?(): void;
-  onToggleShowAllFiles?(): void;
   sidebarVisible?: boolean;
   onToggleSidebar?(): void;
   docPanelVisible?: boolean;
@@ -309,13 +307,6 @@ export function buildMenuTemplate(deps: MenuDeps): MenuItemConstructorOptions[] 
           checked: deps.showHiddenFilesChecked ?? false,
           enabled: deps.onToggleShowHiddenFiles !== undefined,
           click: () => deps.onToggleShowHiddenFiles?.(),
-        },
-        {
-          label: MENU_LABELS.showAllFiles,
-          type: 'checkbox',
-          checked: deps.showAllFilesChecked ?? false,
-          enabled: deps.onToggleShowAllFiles !== undefined,
-          click: () => deps.onToggleShowAllFiles?.(),
         },
         { type: 'separator' },
         {

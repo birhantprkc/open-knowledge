@@ -438,9 +438,10 @@ describe('M1 smoke', () => {
     expect(desktopMembers.size).toBeGreaterThan(0);
     expect(coreMembers.size).toBeGreaterThan(0);
     expect(appMembers.size).toBeGreaterThan(0);
-    expect(desktopMembers.size).toBe(27);
+    expect(desktopMembers.size).toBe(26);
     expect(desktopMembers).toEqual(coreMembers);
     expect(desktopMembers).toEqual(appMembers);
+    expect(desktopMembers.has('toggle-show-hidden-files')).toBe(true);
   });
 
   test('M1 invariant: EntryPoint / OkProjectEntryPoint literal-union drift catcher', async () => {

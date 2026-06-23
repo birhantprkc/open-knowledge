@@ -62,7 +62,7 @@ A folder can describe itself (its own properties, just like a doc's) and offer t
 
 ## File sidebar
 
-The sidebar lists every doc in your project that isn't excluded by `.gitignore` or `.okignore`. Folder rows expand and collapse; file rows open in a tab on click. The toolbar at the top of the sidebar has buttons to create files, create folders, and search.
+The sidebar lists every file in your project on disk, including files excluded by `.gitignore` / `.okignore`, except dot-prefixed entries and tooling internals (`.git/`, `.ok/`, `node_modules/`). Turn on **Show Hidden Files** to reveal the dot-prefixed entries. Folder rows expand and collapse; file rows open in a tab on click. The toolbar at the top of the sidebar has buttons to create files, create folders, and search.
 
 ### Right-click context menus
 
@@ -78,7 +78,6 @@ Right-click anywhere in the sidebar to get a context-aware menu. Three shapes sh
 | Open in Terminal | yes (project root) | yes (folder) | yes (parent dir) |
 | Copy full path / Copy Path ▸ | yes (full path of project root) | yes (Full / Relative) | yes (Full / Relative) |
 | Show Hidden Files | yes | yes | no |
-| Show all files | yes | yes | no |
 | Expand all / Collapse all | yes (tree-scoped) | yes (subtree-scoped) | no |
 | Rename | no | yes | yes |
 | Hide folder / Hide this file | no | yes | yes |
@@ -98,15 +97,15 @@ Right-click on empty space drops the new item at the project root. Right-click o
 
 **Hide this file** on a file row, or **Hide folder** on a folder row, appends a matching pattern to `.okignore`. See [Ignore patterns](/docs/features/ignore-patterns) for the full pattern syntax. The item disappears from the tree, search, and the agent's MCP tools immediately; nothing is deleted on disk.
 
-### Show Hidden Files / Show all files
+### Show Hidden Files
 
-Two toggle items on the empty-space and folder menus surface the corresponding file-tree visibility modes. They persist per-project per-machine in `.ok/local/config.yml` under `appearance.sidebar`. The toggles also live in the macOS **View** menu.
+The sidebar always lists every file on disk under the content directory (including files excluded by `.gitignore` / `.okignore`), except synthetic system docs. A single **Show Hidden Files** toggle on the empty-space and folder menus controls whether dot-prefixed entries are shown. It persists per-project per-machine in `.ok/local/config.yml` under `appearance.sidebar`, and also lives in the macOS **View** menu.
 
 | Toggle | Effect |
 | --- | --- |
-| **Show Hidden Files** | Stops the client from hiding paths that start with `.` (recovers allowed dotfiles like `brain/.archived/note.md`). Server filters still apply, so `.git/`, `.ok/`, and `node_modules/` stay hidden. |
-| **Show all files** | On by default. Bypasses every filter (client dot-segment drop AND the server's `.gitignore` / `.okignore` / built-in exclusions), so the tree shows literally everything on disk under the content directory, except synthetic system docs. Turn it off to scope the tree to indexed / linked content (`.gitignore` / `.okignore` honored). On very large trees the walk is capped, and the sidebar shows a notice telling you the list is partial so you can use search to find the rest. |
-When both are on, **Show all files** supersedes.
+| **Show Hidden Files** | Off by default. When on, stops the client from hiding paths that start with `.` (recovers allowed dotfiles like `brain/.archived/note.md`). Tooling internals (`.git/`, `.ok/`, `node_modules/`) stay hidden in every mode. |
+
+On very large trees the disk walk is capped per level, and the sidebar shows a notice telling you the list is partial.
 
 ### Deleting via Trash
 
@@ -210,7 +209,6 @@ Before the existing Zoom and Toggle Fullscreen items, the View menu gets:
 | **Show / Hide Sidebar** | `Cmd+Option+S` | Toggles the file sidebar (left). Label flips between Show and Hide based on current state, matching Finder. |
 | **Show / Hide Document Panel** | `Cmd+Option+B` | Toggles the document panel (right). |
 | **Show Hidden Files** | (none) | `appearance.sidebar.showHiddenFiles`; same toggle as the sidebar's right-click menu. |
-| **Show All Files** | (none) | `appearance.sidebar.showAllFiles`. |
 | **Expand All** | (none) | Expands every folder in the tree. Hidden when nothing is collapsed. |
 | **Collapse All** | (none) | Collapses every folder in the tree. Hidden when nothing is expanded. |
 

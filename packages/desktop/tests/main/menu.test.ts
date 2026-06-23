@@ -614,19 +614,9 @@ describe('buildMenuTemplate — View menu visibility toggles + tree-scoped expan
     expect(findByLabel(template, 'Show hidden files')?.accelerator).toBe('CmdOrCtrl+Shift+.');
   });
 
-  test('Show all files renders as a checkbox-type item with checked state from deps', () => {
-    const template = buildMenuTemplate(
-      makeDeps({ onToggleShowAllFiles: mock(() => {}), showAllFilesChecked: true }),
-    );
-    const item = findByLabel(template, 'Show all files');
-    expect(item?.type).toBe('checkbox');
-    expect(item?.checked).toBe(true);
-  });
-
   test('Show hidden files DISABLED when toggle handler missing (unit-test default)', () => {
     const template = buildMenuTemplate(makeDeps());
     expect(findByLabel(template, 'Show hidden files')?.enabled).toBe(false);
-    expect(findByLabel(template, 'Show all files')?.enabled).toBe(false);
   });
 
   test('Expand all / Collapse all render with visible=true by default', () => {
@@ -653,21 +643,17 @@ describe('buildMenuTemplate — View menu visibility toggles + tree-scoped expan
 
   test('View menu click handlers dispatch to deps', () => {
     const onToggleShowHiddenFiles = mock(() => {});
-    const onToggleShowAllFiles = mock(() => {});
     const onExpandAll = mock(() => {});
     const onCollapseAll = mock(() => {});
     const template = buildMenuTemplate(
       makeDeps({
         onToggleShowHiddenFiles,
-        onToggleShowAllFiles,
         onExpandAll,
         onCollapseAll,
       }),
     );
     (findByLabel(template, 'Show hidden files')?.click as (() => void) | undefined)?.();
     expect(onToggleShowHiddenFiles).toHaveBeenCalledTimes(1);
-    (findByLabel(template, 'Show all files')?.click as (() => void) | undefined)?.();
-    expect(onToggleShowAllFiles).toHaveBeenCalledTimes(1);
     (findByLabel(template, 'Expand all')?.click as (() => void) | undefined)?.();
     expect(onExpandAll).toHaveBeenCalledTimes(1);
     (findByLabel(template, 'Collapse all')?.click as (() => void) | undefined)?.();

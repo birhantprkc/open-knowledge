@@ -438,7 +438,6 @@ let editorActiveTarget: EditorActiveTargetSnapshot = { kind: null };
 
 let editorViewMenuState: EditorViewMenuStateSnapshot = {
   showHiddenFiles: false,
-  showAllFiles: true,
   canExpandAll: true,
   canCollapseAll: true,
   sidebarVisible: true,
@@ -1262,7 +1261,6 @@ async function runApplicationMenuRefresh(): Promise<void> {
     onCopyFullPath: () => sendMenuActionToFocused('copy-full-path'),
     onCopyRelativePath: () => sendMenuActionToFocused('copy-relative-path'),
     showHiddenFilesChecked: editorViewMenuState.showHiddenFiles,
-    showAllFilesChecked: editorViewMenuState.showAllFiles,
     canExpandAll: editorViewMenuState.canExpandAll,
     canCollapseAll: editorViewMenuState.canCollapseAll,
     sidebarVisible: editorViewMenuState.sidebarVisible,
@@ -1270,7 +1268,6 @@ async function runApplicationMenuRefresh(): Promise<void> {
     terminalVisible: editorViewMenuState.terminalVisible,
     terminalLive: editorViewMenuState.terminalLive,
     onToggleShowHiddenFiles: () => sendMenuActionToFocused('toggle-show-hidden-files'),
-    onToggleShowAllFiles: () => sendMenuActionToFocused('toggle-show-all-files'),
     onToggleSidebar: () => sendMenuActionToFocused('toggle-sidebar'),
     onToggleDocPanel: () => sendMenuActionToFocused('toggle-doc-panel'),
     onToggleTerminal: () => sendMenuActionToFocused('toggle-terminal'),

@@ -722,6 +722,20 @@
     "LtI9AS": ["Owner"],
     "LtSYdi": ["Reveal in Finder"],
     "LtVw4J": ["Claude CLI, ", ["hint"]],
+    "LuoJWu": [
+      [
+        "truncatedShownCount",
+        "plural",
+        {
+          "one": ["Showing the first item in one folder — the rest of that folder is hidden."],
+          "other": [
+            "Showing the first ",
+            ["formattedCount"],
+            " items in one folder — the rest of that folder is hidden."
+          ]
+        }
+      ]
+    ],
     "M1OfV9": ["Next source diagnostic"],
     "M3ytY_": [
       "This looks like a drive root (e.g., C:\\). Scaffolding here will scan an entire drive."
@@ -1375,7 +1389,6 @@
     "hynz2K": ["Download started"],
     "i1flq_": ["Wiki link suggestions"],
     "i3f2kh": ["No matching commands."],
-    "i8dKs-": ["Show all files"],
     "i92eAT": ["We'll create a repository and start syncing — no terminal needed."],
     "i9OyGp": ["Undo or redo"],
     "i9toLO": ["Agent configuration file"],
@@ -1506,22 +1519,6 @@
       "Organize my existing specs into a linked index grouped by area, and flag any that have drifted out of sync with the current code."
     ],
     "mSJ3Rn": ["Computing scaffold plan"],
-    "mSpqzP": [
-      [
-        "truncatedShownCount",
-        "plural",
-        {
-          "one": [
-            "Showing the first item in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view."
-          ],
-          "other": [
-            "Showing the first ",
-            ["formattedCount"],
-            " items in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view."
-          ]
-        }
-      ]
-    ],
     "mU3j1b": ["Remove item ", ["0"]],
     "mWVJRX": ["Collapsible section with a clickable summary."],
     "mYGY3B": ["Date"],

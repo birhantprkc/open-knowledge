@@ -200,7 +200,7 @@ import {
 import { OK_SIDEBAR_DRAG_MIME, serializeSidebarDragPayload } from '@/lib/sidebar-drag';
 import { cn } from '@/lib/utils';
 import { joinWorkspacePath } from '@/lib/workspace-paths';
-import { mergeAndPruneRecentLocalAdds, spliceLazyFolderChildren } from './file-tree-merge';
+import { spliceLazyFolderChildren } from './file-tree-merge';
 import { OpenInAgentContextSubmenu } from './handoff/OpenInAgentContextSubmenu';
 import {
   buildFolderHandoffInput,
@@ -484,12 +484,12 @@ interface FileTreeMenuProps {
   };
   model: PierreFileTreeModel;
   okignoreBinding: OkignoreBinding | null;
-  /** Project-local config binding for the `Show hidden files` / `Show all files`
-   *  folder-menu toggles. Patched directly here (mirrors the okignore Hide
-   *  flow); `null` during cold-start disables the toggle items. */
+  /** Project-local config binding for the `Show hidden files` folder-menu
+   *  toggle. Patched directly here (mirrors the okignore Hide flow); `null`
+   *  during cold-start disables the toggle item. */
   projectLocalBinding: ConfigBinding | null;
-  /** Layered config view, source for the two toggle check-states
-   *  (`appearance.sidebar.{showHiddenFiles,showAllFiles}`). */
+  /** Layered config view, source for the toggle check-state
+   *  (`appearance.sidebar.showHiddenFiles`). */
   mergedConfig: Config | null;
   onStartCreating: (kind: 'file' | 'folder', parentDir: string) => void;
   /** Inline create-from-template for the given parent dir + template name —
@@ -625,7 +625,6 @@ function FileTreeMenu({
   const canHide = okignoreTarget !== null && okignoreBinding !== null;
   const hideLabel = isFolder ? t`Hide folder` : t`Hide this file`;
   const showHiddenFiles = mergedConfig?.appearance?.sidebar?.showHiddenFiles ?? false;
-  const showAllFiles = mergedConfig?.appearance?.sidebar?.showAllFiles ?? true;
   const canToggleVisibility = projectLocalBinding !== null;
   const folderConfig = useFolderConfig(isFolder ? treeDirectoryPathToFolderPath(item.path) : null);
   const folderHasTemplates =
@@ -666,19 +665,6 @@ function FileTreeMenu({
       });
     }
   };
-  const handleShowAllFilesToggle = (checked: boolean) => {
-    if (projectLocalBinding === null) return;
-    const result = projectLocalBinding.patch({
-      appearance: { sidebar: { showAllFiles: checked } },
-    });
-    if (!result.ok) {
-      console.warn('[FileTree] showAllFiles toggle rejected:', humanFormat(result.error));
-      toast.error(t`Could not update sidebar settings`, {
-        description: humanFormat(result.error),
-      });
-    }
-  };
-
   let subtreeFolderCount = 0;
   let subtreeExpandedCount = 0;
   if (isFolder) {
@@ -796,9 +782,8 @@ function FileTreeMenu({
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            {/* These toggles only flip the persisted config; the filter
-                pipeline (client dot-segment bypass / server showAll) reads it
-                from a separate seam. */}
+            {/* Flips the persisted `showHiddenFiles` config; the client-side
+                dot-segment filter reads it from a separate seam. */}
             <DropdownMenuCheckboxItem
               checked={showHiddenFiles}
               onCheckedChange={handleShowHiddenFilesToggle}
@@ -806,14 +791,6 @@ function FileTreeMenu({
               data-testid="file-tree-menu-show-hidden-files"
             >
               <Trans>Show hidden files</Trans>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={showAllFiles}
-              onCheckedChange={handleShowAllFilesToggle}
-              disabled={!canToggleVisibility}
-              data-testid="file-tree-menu-show-all-files"
-            >
-              <Trans>Show all files</Trans>
             </DropdownMenuCheckboxItem>
             {/* Subtree-scoped Expand/Collapse, smart-hidden. The divider only
                 renders when the section is non-empty so a fully-expanded or
@@ -1210,7 +1187,6 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
   const detectLazyFolderExpansionsRef = useRef<() => void>(() => {});
   const revalidateExpandedLazyDirsRef = useRef<() => void>(() => {});
   const showHiddenFilesRef = useRef<boolean>(false);
-  const showAllFilesRef = useRef<boolean>(true);
   const refreshDocsScheduleRef = useRef<(() => void) | null>(null);
   const fileTreeHostRef = useRef<HTMLDivElement | null>(null);
   const handleSelectionChangeRef = useRef<(selectedPaths: readonly string[]) => void>(() => {});
@@ -1250,7 +1226,7 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
   }
 
   const isFirstRelaunchEffectRunRef = useRef(true);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: relaunchInFlight is a transition trigger, not a read — the body calls the hoisted scheduler ref only. Sibling pattern at the showHiddenFiles / showAllFiles flip effects below.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: relaunchInFlight is a transition trigger, not a read — the body calls the hoisted scheduler ref only. Sibling pattern at the showHiddenFiles flip effect below.
   useEffect(() => {
     if (isFirstRelaunchEffectRunRef.current) {
       isFirstRelaunchEffectRunRef.current = false;
@@ -1390,7 +1366,6 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
   };
   const { okignoreBinding, projectLocalBinding, merged } = useConfigContext();
   const showHiddenFiles = merged?.appearance?.sidebar?.showHiddenFiles ?? false;
-  const showAllFiles = merged?.appearance?.sidebar?.showAllFiles ?? true;
 
   const isAvailable = () => busyPathRef.current === null;
 
@@ -1540,7 +1515,7 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
       reportServerReachableError(result.title);
       return;
     }
-    const bypassClientDotDrop = showHiddenFilesRef.current || showAllFilesRef.current;
+    const bypassClientDotDrop = showHiddenFilesRef.current;
     const children = filterVisibleEntries(result.entries, bypassClientDotDrop);
     lazyLoadedDirTreePathsRef.current.add(folderTreePath);
     setDocuments((prev) =>
@@ -1555,7 +1530,6 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
     const expanded = collectExpandedFolderTreePaths();
     const previous = prevExpandedFolderTreePathsRef.current;
     prevExpandedFolderTreePathsRef.current = expanded;
-    if (!showAllFilesRef.current) return;
     for (const folderTreePath of expanded) {
       if (previous.has(folderTreePath)) continue;
       if (lazyLoadedDirTreePathsRef.current.has(folderTreePath)) continue;
@@ -1841,16 +1815,14 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
       lazyChildFetchControllersRef.current.clear();
       lazyLoadedDirTreePathsRef.current.clear();
       try {
-        const showAll = showAllFilesRef.current;
-        const url = showAll ? '/api/documents?showAll=true&dir=&depth=1' : '/api/documents';
-        const res = await fetch(url, {
+        const res = await fetch('/api/documents?showAll=true&dir=&depth=1', {
           signal: controller.signal,
-          headers: showAll ? SHOW_ALL_NDJSON_ACCEPT : undefined,
+          headers: SHOW_ALL_NDJSON_ACCEPT,
         });
-        if (showAll && isNdjsonResponse(res)) {
+        if (isNdjsonResponse(res)) {
           const { entries, truncated } = await consumeShowAllStream(res);
           if (!active) return;
-          const bypassClientDotDrop = showHiddenFilesRef.current || showAll;
+          const bypassClientDotDrop = showHiddenFilesRef.current;
           const serverEntries = filterVisibleEntries(toFileEntries(entries), bypassClientDotDrop);
           setDocuments((prev) =>
             spliceLazyFolderChildren(prev, '', serverEntries, recentLocalAddsRef.current),
@@ -1871,29 +1843,20 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
               reportServerReachableError(t`Documents response did not match expected shape.`);
               setTruncatedShownCount(null);
             } else {
-              const bypassClientDotDrop = showHiddenFilesRef.current || showAll;
+              const bypassClientDotDrop = showHiddenFilesRef.current;
               const serverEntries = filterVisibleEntries(
                 toFileEntries(success.data.documents),
                 bypassClientDotDrop,
               );
-              if (showAll) {
-                setDocuments((prev) =>
-                  spliceLazyFolderChildren(prev, '', serverEntries, recentLocalAddsRef.current),
-                );
-              } else {
-                const merged = mergeAndPruneRecentLocalAdds(
-                  serverEntries,
-                  documentsRef.current,
-                  recentLocalAddsRef.current,
-                );
-                setDocuments(merged);
-              }
+              setDocuments((prev) =>
+                spliceLazyFolderChildren(prev, '', serverEntries, recentLocalAddsRef.current),
+              );
               setError(null);
               noteConnectivityRecovered();
               setTruncatedShownCount(
-                showAll && success.data.truncated === true ? success.data.documents.length : null,
+                success.data.truncated === true ? success.data.documents.length : null,
               );
-              if (showAll) revalidateExpandedLazyDirsRef.current();
+              revalidateExpandedLazyDirsRef.current();
             }
           }
         }
@@ -1949,16 +1912,6 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
     }
     refreshDocsScheduleRef.current?.();
   }, [showHiddenFiles]);
-
-  const isFirstShowAllFilesEffectRunRef = useRef(true);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: showAllFiles is a flip-detection trigger, not a read — the effect body reads refs only. Sibling pattern at the treePathsSignature reset effect above.
-  useEffect(() => {
-    if (isFirstShowAllFilesEffectRunRef.current) {
-      isFirstShowAllFilesEffectRunRef.current = false;
-      return;
-    }
-    refreshDocsScheduleRef.current?.();
-  }, [showAllFiles]);
 
   useEffect(() => {
     let active = true;
@@ -2676,7 +2629,6 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
     assetTreePathsRef.current = assetTreePaths;
     busyPathRef.current = busyPath;
     showHiddenFilesRef.current = showHiddenFiles;
-    showAllFilesRef.current = showAllFiles;
     treePathsRef.current = treePaths;
     folderTreePathsRef.current = folderTreePaths;
     activeAncestorTreePathsRef.current = activeAncestorTreePaths;
@@ -3429,8 +3381,8 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
   if (truncatedShownCount !== null) {
     const formattedCount = new Intl.NumberFormat(i18n.locale).format(truncatedShownCount);
     truncationNotice = plural(truncatedShownCount, {
-      one: 'Showing the first item in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.',
-      other: `Showing the first ${formattedCount} items in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.`,
+      one: 'Showing the first item in one folder — the rest of that folder is hidden.',
+      other: `Showing the first ${formattedCount} items in one folder — the rest of that folder is hidden.`,
     });
   }
   return (

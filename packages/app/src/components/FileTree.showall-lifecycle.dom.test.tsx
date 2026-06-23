@@ -13,7 +13,7 @@ function PassThrough({ children }: { children?: ReactNode }) {
 
 const SHOW_ALL_DEPTH1_URL = '/api/documents?showAll=true&dir=&depth=1';
 
-let mergedConfig: unknown = { appearance: { sidebar: { showAllFiles: true } } };
+let mergedConfig: unknown = { appearance: { sidebar: {} } };
 let showAllResponseFactory: () => Response = () => jsonResponse({ documents: [] });
 let responseByUrl = new Map<string, (init?: RequestInit) => Response | Promise<Response>>();
 const fetchUrls: string[] = [];
@@ -256,7 +256,7 @@ describe('FileTree showAll notice lifecycle', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () =>
       jsonResponse({
         documents: [folderEntry('capped', true), folderEntry('uncapped', true), docEntry('README')],
@@ -371,7 +371,7 @@ describe('FileTree showAll interrupted NDJSON seed', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () => jsonResponse({ documents: [] });
     responseByUrl = new Map();
     fetchUrls.length = 0;
@@ -459,7 +459,7 @@ describe('FileTree showAll deep-link progressive drill-down', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllResponseFactory = () =>
       jsonResponse({ documents: [folderEntry('a', true)], truncated: false });
     responseByUrl = new Map();

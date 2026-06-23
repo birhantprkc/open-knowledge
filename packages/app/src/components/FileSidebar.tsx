@@ -183,7 +183,6 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
   const emptySpaceHandoffInput = buildProjectScopedHandoffInput({ workspace });
   const { projectLocalBinding, merged } = useConfigContext();
   const showHiddenFiles = merged?.appearance?.sidebar?.showHiddenFiles ?? false;
-  const showAllFiles = merged?.appearance?.sidebar?.showAllFiles ?? true;
   const showEmptySpaceExpandAll = hasFolders && !allExpanded;
   const showEmptySpaceCollapseAll = hasFolders && !noneExpanded;
   const showEmptySpaceTreeStateSection = showEmptySpaceExpandAll || showEmptySpaceCollapseAll;
@@ -233,18 +232,6 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
       });
     }
   };
-  const handleEmptySpaceShowAllFilesToggle = (checked: boolean) => {
-    if (projectLocalBinding === null) return;
-    const result = projectLocalBinding.patch({
-      appearance: { sidebar: { showAllFiles: checked } },
-    });
-    if (!result.ok) {
-      console.warn('[FileSidebar] showAllFiles toggle rejected:', humanFormat(result.error));
-      toast.error(t`Could not update sidebar settings`, {
-        description: humanFormat(result.error),
-      });
-    }
-  };
   const handleEmptySpaceExpandAll = () => {
     tree?.expandAll();
   };
@@ -256,19 +243,11 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
     if (!bridge) return;
     bridge.editor.notifyViewMenuStateChanged({
       showHiddenFiles,
-      showAllFiles,
       canExpandAll: showEmptySpaceExpandAll,
       canCollapseAll: showEmptySpaceCollapseAll,
       sidebarVisible: sidebarState === 'expanded',
     });
-  }, [
-    bridge,
-    showHiddenFiles,
-    showAllFiles,
-    showEmptySpaceExpandAll,
-    showEmptySpaceCollapseAll,
-    sidebarState,
-  ]);
+  }, [bridge, showHiddenFiles, showEmptySpaceExpandAll, showEmptySpaceCollapseAll, sidebarState]);
 
   useEffect(() => {
     if (!bridge) return;
@@ -368,22 +347,6 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
           }
           return;
         }
-        case 'toggle-show-all-files': {
-          if (projectLocalBinding === null) return;
-          const result = projectLocalBinding.patch({
-            appearance: { sidebar: { showAllFiles: !showAllFiles } },
-          });
-          if (!result.ok) {
-            console.warn(
-              '[FileSidebar] toggle-show-all-files rejected:',
-              humanFormat(result.error),
-            );
-            toast.error(t`Could not update sidebar settings`, {
-              description: humanFormat(result.error),
-            });
-          }
-          return;
-        }
         case 'expand-all-tree': {
           tree?.expandAll();
           return;
@@ -416,7 +379,6 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
     initialCreateDir,
     projectLocalBinding,
     showHiddenFiles,
-    showAllFiles,
     handoffInstallStates,
     dispatchHandoff,
     toggleSidebar,
@@ -766,14 +728,6 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
             data-testid="empty-space-menu-show-hidden-files"
           >
             <Trans>Show hidden files</Trans>
-          </ContextMenuCheckboxItem>
-          <ContextMenuCheckboxItem
-            checked={showAllFiles}
-            onCheckedChange={handleEmptySpaceShowAllFilesToggle}
-            disabled={projectLocalBinding === null}
-            data-testid="empty-space-menu-show-all-files"
-          >
-            <Trans>Show all files</Trans>
           </ContextMenuCheckboxItem>
           {showEmptySpaceTreeStateSection ? <ContextMenuSeparator /> : null}
           {showEmptySpaceExpandAll ? (

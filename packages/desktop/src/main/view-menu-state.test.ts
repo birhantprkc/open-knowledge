@@ -4,7 +4,6 @@ import { mergeViewMenuState } from './view-menu-state';
 describe('mergeViewMenuState — multi-publisher non-clobbering contract', () => {
   const initial = {
     showHiddenFiles: false,
-    showAllFiles: false,
     canExpandAll: true,
     canCollapseAll: true,
     sidebarVisible: true,
@@ -14,7 +13,6 @@ describe('mergeViewMenuState — multi-publisher non-clobbering contract', () =>
   test('EditorArea push (docPanelVisible only) preserves FileSidebar fields', () => {
     const afterFileSidebar = mergeViewMenuState(initial, {
       showHiddenFiles: true,
-      showAllFiles: true,
       canExpandAll: false,
       canCollapseAll: false,
       sidebarVisible: false,
@@ -26,7 +24,6 @@ describe('mergeViewMenuState — multi-publisher non-clobbering contract', () =>
 
     expect(afterEditorArea).toEqual({
       showHiddenFiles: true,
-      showAllFiles: true,
       canExpandAll: false,
       canCollapseAll: false,
       sidebarVisible: false,
@@ -41,7 +38,6 @@ describe('mergeViewMenuState — multi-publisher non-clobbering contract', () =>
 
     const afterFileSidebar = mergeViewMenuState(afterEditorArea, {
       showHiddenFiles: true,
-      showAllFiles: false,
       canExpandAll: false,
       canCollapseAll: true,
       sidebarVisible: false,

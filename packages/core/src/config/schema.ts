@@ -73,16 +73,6 @@ export const ConfigSchema = z.looseObject({
                 'Show dot-prefixed entries (e.g. .ok/, .okignore) in the file tree. Per-machine (project-local) — not shared with collaborators.',
             })
             .default(false),
-          showAllFiles: z
-            .boolean()
-            .register(fieldRegistry, {
-              scope: 'project-local',
-              agentSettable: false,
-              defaultScope: 'project-local',
-              description:
-                'Show every file, including those excluded by .gitignore / .okignore. On by default; turn off to scope the tree to indexed/linked content. Per-machine (project-local) — not shared.',
-            })
-            .default(true),
         })
         .optional(),
     })

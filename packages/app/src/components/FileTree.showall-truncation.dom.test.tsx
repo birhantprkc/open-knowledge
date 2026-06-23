@@ -12,7 +12,7 @@ function PassThrough({ children }: { children?: ReactNode }) {
 
 const SHOW_ALL_DEPTH1_URL = '/api/documents?showAll=true&dir=&depth=1';
 
-let mergedConfig: unknown = { appearance: { sidebar: { showAllFiles: true } } };
+let mergedConfig: unknown = { appearance: { sidebar: {} } };
 let showAllBody: unknown = { documents: [], truncated: true };
 let showAllStatus = 200;
 const fetchUrls: string[] = [];
@@ -221,7 +221,7 @@ describe('FileTree showAll truncation notice', () => {
   let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: {} } };
     showAllBody = { documents: [], truncated: true };
     showAllStatus = 200;
     fetchUrls.length = 0;
@@ -283,17 +283,6 @@ describe('FileTree showAll truncation notice', () => {
 
     await screen.findByTestId('fake-pierre-tree');
     expect(fetchUrls).toContain(SHOW_ALL_DEPTH1_URL);
-    expect(screen.queryByRole('status')).toBeNull();
-  });
-
-  test('does NOT render the notice when Show All Files is off, even if a stray truncated flag is present (QA-002 negative)', async () => {
-    mergedConfig = { appearance: { sidebar: { showAllFiles: false } } };
-    showAllBody = { documents: [docEntry('a')], truncated: true };
-    render(<FileTree />);
-
-    await screen.findByTestId('fake-pierre-tree');
-    expect(fetchUrls).toContain('/api/documents');
-    expect(fetchUrls.some((u) => u.includes('showAll=true'))).toBe(false);
     expect(screen.queryByRole('status')).toBeNull();
   });
 

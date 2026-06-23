@@ -330,8 +330,8 @@ msgid "{tokens, plural, one {token} other {tokens}}"
 msgstr "{tokens, plural, one {token} other {tokens}}"
 
 #: src/components/FileTree.tsx
-msgid "{truncatedShownCount, plural, one {Showing the first item in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.} other {Showing the first {formattedCount} items in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.}}"
-msgstr "{truncatedShownCount, plural, one {Showing the first item in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.} other {Showing the first {formattedCount} items in one folder — the rest of that folder is hidden. Turn off Show all files for the filtered view.}}"
+msgid "{truncatedShownCount, plural, one {Showing the first item in one folder — the rest of that folder is hidden.} other {Showing the first {formattedCount} items in one folder — the rest of that folder is hidden.}}"
+msgstr "{truncatedShownCount, plural, one {Showing the first item in one folder — the rest of that folder is hidden.} other {Showing the first {formattedCount} items in one folder — the rest of that folder is hidden.}}"
 
 #: src/components/FileTree.tsx
 msgid "{uploadedCount, plural, one {Uploaded one file} other {Uploaded {uploadedCount} files}}"
@@ -5135,11 +5135,6 @@ msgstr "Show {hidden} more"
 #: src/components/settings/OkignoreSection.tsx
 msgid "Show advanced"
 msgstr "Show advanced"
-
-#: src/components/FileSidebar.tsx
-#: src/components/FileTree.tsx
-msgid "Show all files"
-msgstr "Show all files"
 
 #: src/components/GraphPanel.tsx
 msgid "Show external URL nodes"

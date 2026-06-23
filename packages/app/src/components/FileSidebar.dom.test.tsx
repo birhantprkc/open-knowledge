@@ -71,9 +71,9 @@ let activeTarget: { kind: 'folder'; folderPath: string } | null = {
 let folderState: FolderState = { folderCount: 2, expandedCount: 1 };
 let hasTemplates = true;
 let mergedConfig: {
-  appearance?: { sidebar?: { showHiddenFiles?: boolean; showAllFiles?: boolean } };
+  appearance?: { sidebar?: { showHiddenFiles?: boolean } };
 } | null = {
-  appearance: { sidebar: { showHiddenFiles: false, showAllFiles: true } },
+  appearance: { sidebar: { showHiddenFiles: false } },
 };
 let sidebarSearchThrows = false;
 let projectPatchResult: { ok: true } | { ok: false; error: unknown } = { ok: true };
@@ -380,7 +380,7 @@ describe('FileSidebar runtime behavior', () => {
     activeTarget = { kind: 'folder', folderPath: 'docs' };
     folderState = { folderCount: 2, expandedCount: 1 };
     hasTemplates = true;
-    mergedConfig = { appearance: { sidebar: { showHiddenFiles: false, showAllFiles: true } } };
+    mergedConfig = { appearance: { sidebar: { showHiddenFiles: false } } };
     sidebarSearchThrows = false;
     projectPatchResult = { ok: true };
     openInAgentSubmenuProps = [];
@@ -527,7 +527,6 @@ describe('FileSidebar runtime behavior', () => {
       'open-in-agent-empty-space-submenu',
       'empty-space-menu-copy-full-path',
       'empty-space-menu-show-hidden-files',
-      'empty-space-menu-show-all-files',
       'empty-space-menu-expand-all',
       'empty-space-menu-collapse-all',
     ];
@@ -555,12 +554,8 @@ describe('FileSidebar runtime behavior', () => {
     expect(toastSuccesses[0]?.[0]).toBe('Copied full path');
 
     fireEvent.click(screen.getByTestId('empty-space-menu-show-hidden-files'));
-    fireEvent.click(screen.getByTestId('empty-space-menu-show-all-files'));
     expect(projectLocalPatch).toHaveBeenCalledWith({
       appearance: { sidebar: { showHiddenFiles: true } },
-    });
-    expect(projectLocalPatch).toHaveBeenCalledWith({
-      appearance: { sidebar: { showAllFiles: false } },
     });
 
     expect(openInAgentSubmenuProps.at(-1)?.input).toEqual({
@@ -592,7 +587,6 @@ describe('FileSidebar runtime behavior', () => {
           sidebarVisible: true,
           canCollapseAll: true,
           canExpandAll: true,
-          showAllFiles: true,
           showHiddenFiles: false,
         }),
       ),
@@ -606,7 +600,6 @@ describe('FileSidebar runtime behavior', () => {
           sidebarVisible: true,
           canCollapseAll: true,
           canExpandAll: false,
-          showAllFiles: true,
           showHiddenFiles: false,
         }),
       ),

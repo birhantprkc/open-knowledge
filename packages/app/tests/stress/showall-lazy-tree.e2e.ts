@@ -44,23 +44,6 @@ async function collapseFolder(page: Page, folderName: string): Promise<void> {
   await expect(row).toHaveAttribute('aria-expanded', 'false');
 }
 
-async function setShowAllFiles(page: Page, enabled: boolean): Promise<void> {
-  const anchor = folderRow(page, 'sidebar-folder');
-  await expect(anchor).toBeVisible({ timeout: 15_000 });
-  await anchor.click({ button: 'right' });
-  const toggle = page.getByTestId('file-tree-menu-show-all-files');
-  await expect(toggle).toBeVisible({ timeout: 5_000 });
-  await expect(toggle).not.toHaveAttribute('aria-disabled', 'true', { timeout: 10_000 });
-  const alreadyEnabled = (await toggle.getAttribute('aria-checked')) === 'true';
-  if (alreadyEnabled === enabled) {
-    await page.keyboard.press('Escape');
-    await expect(toggle).toBeHidden();
-    return;
-  }
-  await toggle.click();
-  await expect(toggle).toBeHidden();
-}
-
 test('Show All seeds the root lazily and loads folder children on expand', async ({
   page,
   api,
@@ -70,7 +53,7 @@ test('Show All seeds the root lazily and loads folder children on expand', async
   const rootDoc = `showall-root-${stamp}`;
   const folder = `showall-dir-${stamp}`;
   const nested = `nested-${stamp}`;
-  const hiddenDir = `.showall-ghost-${stamp}`;
+  const diskOnlyDir = `showall-disk-${stamp}`;
 
   await api.seedDocs([
     { name: rootDoc, markdown: '# root\n' },
@@ -79,8 +62,8 @@ test('Show All seeds the root lazily and loads folder children on expand', async
   ]);
   mkdirSync(join(workerServer.contentDir, folder, nested), { recursive: true });
   writeFileSync(join(workerServer.contentDir, folder, nested, 'deep-doc.md'), '# deep\n', 'utf-8');
-  mkdirSync(join(workerServer.contentDir, hiddenDir), { recursive: true });
-  writeFileSync(join(workerServer.contentDir, hiddenDir, 'ghost.md'), '# ghost\n', 'utf-8');
+  mkdirSync(join(workerServer.contentDir, diskOnlyDir), { recursive: true });
+  writeFileSync(join(workerServer.contentDir, diskOnlyDir, 'ghost.md'), '# ghost\n', 'utf-8');
 
   const showAllListingUrls: string[] = [];
   page.on('request', (request) => {
@@ -93,14 +76,7 @@ test('Show All seeds the root lazily and loads folder children on expand', async
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
 
-  await setShowAllFiles(page, false);
-  await expect(fileRow(page, `${rootDoc}.md`)).toBeVisible({ timeout: 15_000 });
-  await expect(folderRow(page, folder)).toBeVisible();
-  await expect(folderRow(page, hiddenDir)).toBeHidden();
-
-  await setShowAllFiles(page, true);
-
-  await expect(folderRow(page, hiddenDir)).toBeVisible({ timeout: 15_000 });
+  await expect(folderRow(page, diskOnlyDir)).toBeVisible({ timeout: 15_000 });
   await expect(fileRow(page, `${rootDoc}.md`)).toBeVisible();
   await expect(fileRow(page, 'child-a.md')).toBeHidden();
   expect(showAllListingUrls.some((url) => url.includes(`dir=${encodeURIComponent(folder)}`))).toBe(
@@ -160,7 +136,6 @@ test('truncation banner appears for an overflowing level while every root entry 
 
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
-  await setShowAllFiles(page, true);
 
   const banner = page.getByRole('status').filter({ hasText: 'Showing the first' });
 
