@@ -7,6 +7,28 @@ const nextConfig: NextConfig = {
     // Fail the build on any compiler diagnostic
     panicThreshold: 'all_errors',
   },
+  // PostHog ingestion is proxied through this origin (api_host: '/ingest' in
+  // instrumentation-client.ts) so ad-blockers don't drop analytics requests.
+  // skipTrailingSlashRedirect keeps PostHog's trailing-slash routes reachable
+  // through the rewrites below.
+  skipTrailingSlashRedirect: true,
+  async rewrites() {
+    return [
+      {
+        source: '/ingest/static/:path*',
+        destination: 'https://us-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/ingest/array/:path*',
+        destination: 'https://us-assets.i.posthog.com/array/:path*',
+      },
+      // Catch-all must come last — the static/array asset rules above must win.
+      {
+        source: '/ingest/:path*',
+        destination: 'https://us.i.posthog.com/:path*',
+      },
+    ];
+  },
   // HSTS with `includeSubDomains; preload` (Vercel's injected default is
   // max-age only). Chrome blocks a download when ANY hop in its redirect
   // chain is plain http — so a visit starting at
@@ -31,6 +53,9 @@ const nextConfig: NextConfig = {
   },
   // Redirects for deleted docs pages — the prior `Install` page was folded
   // into Quickstart when the docs pivoted to a desktop-app-first story.
+  // Trailing-slash variants are listed explicitly: skipTrailingSlashRedirect
+  // (set above for the PostHog proxy) disables Next's automatic slash
+  // normalization, so `/path/` no longer falls through to the `/path` rule.
   async redirects() {
     return [
       {
@@ -39,7 +64,17 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/docs/get-started/install/',
+        destination: '/docs/get-started/quickstart',
+        permanent: true,
+      },
+      {
         source: '/docs/features/templates',
+        destination: '/docs/advanced/folders-and-templates',
+        permanent: true,
+      },
+      {
+        source: '/docs/features/templates/',
         destination: '/docs/advanced/folders-and-templates',
         permanent: true,
       },
