@@ -29,7 +29,7 @@ import {
 } from '@inkeep/open-knowledge-core';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { AlertTriangle, ChevronRight, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FrontmatterBindingProvider } from '@/components/FrontmatterBindingContext';
 import {
   type AddDraft,
@@ -41,6 +41,7 @@ import { useProperties } from '@/components/PropertyContext';
 import { coerceValue, DEFAULT_VALUE_FOR_TYPE } from '@/components/PropertyWidgets';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { usePublishFrontmatterSelection } from '@/hooks/use-selection-context';
 
 interface PropertyPanelProps {
   provider: HocuspocusProvider;
@@ -85,6 +86,9 @@ export function PropertyPanel({ provider }: PropertyPanelProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [resetCounters, setResetCounters] = useState<Record<string, number>>({});
   const docName = provider.configuration.name ?? '';
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  usePublishFrontmatterSelection(panelRef, docName);
 
   function commitPatch(patch: FrontmatterPatch): PatchResult {
     if (!binding) {
@@ -333,6 +337,7 @@ export function PropertyPanel({ provider }: PropertyPanelProps) {
   return (
     <FrontmatterBindingProvider binding={binding}>
       <div
+        ref={panelRef}
         className="property-panel editor-content-aligned pt-4 pb-4 text-sm"
         data-testid="property-panel"
       >

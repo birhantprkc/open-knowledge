@@ -682,6 +682,27 @@ msgstr ""
 msgid "Are you sure you want to delete {targetCount} selected items? Folders and all files inside them will be deleted. This action cannot be undone."
 msgstr ""
 
+#: src/components/BottomComposer.tsx
+msgid "Ask"
+msgstr ""
+
+#. placeholder {0}: cliAriaLabels[selectedCli]
+#. placeholder {0}: resolvedTarget.displayName
+#: src/components/BottomComposer.tsx
+msgid "Ask {0}"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+#: src/components/EditorFooter.tsx
+#: src/editor/bubble-menu/EditWithAiBubbleButton.tsx
+#: src/lib/keyboard-shortcuts.ts
+msgid "Ask AI"
+msgstr ""
+
+#: src/lib/keyboard-shortcuts.ts
+msgid "Ask AI (from selection)"
+msgstr ""
+
 #: src/editor/extensions/WikiLinkPropPanel.tsx
 #: src/editor/link-path-suggestions.tsx
 msgid "Asset"
@@ -929,6 +950,7 @@ msgstr ""
 msgid "Checkbox"
 msgstr ""
 
+#: src/components/BottomComposer.tsx
 #: src/components/handoff/EditWithAiPopover.tsx
 #: src/components/handoff/OpenInAgentContextSubmenu.tsx
 #: src/components/handoff/OpenInAgentMenu.tsx
@@ -959,12 +981,26 @@ msgstr ""
 msgid "Checklist with checkboxes."
 msgstr ""
 
+#: src/components/BottomComposer.tsx
 #: src/components/empty-state/CreatePromptComposer.tsx
 msgid "Choose agent"
 msgstr ""
 
 #: src/components/settings/SharingSection.tsx
 msgid "Choose whether this project's Open Knowledge setup, including its AI-tool connections, is saved with the project so teammates get it too, or kept only on your computer."
+msgstr ""
+
+#: src/components/handoff/AgentSplitButton.tsx
+msgid "Claude"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Claude (CLI)"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+#: src/components/handoff/AgentSplitButton.tsx
+msgid "Claude CLI"
 msgstr ""
 
 #: src/components/ClaudeReadinessBanner.tsx
@@ -1126,6 +1162,14 @@ msgstr ""
 msgid "Code expired — please try again"
 msgstr ""
 
+#: src/components/BottomComposer.tsx
+msgid "Codex (CLI)"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Codex CLI"
+msgstr ""
+
 #: src/components/AutoSyncEnableWarning.tsx
 msgid "Collaborators see your in-progress edits as soon as they sync."
 msgstr ""
@@ -1146,6 +1190,10 @@ msgstr ""
 #: src/components/FileSidebar.tsx
 #: src/components/FileTree.tsx
 msgid "Collapse all"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Collapse Ask AI"
 msgstr ""
 
 #: src/components/ActivityPanelBurstRow.tsx
@@ -1198,6 +1246,10 @@ msgstr ""
 
 #: src/components/SeedDialog.tsx
 msgid "Computing scaffold plan"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Condense my AGENTS.md file to less than 40k characters"
 msgstr ""
 
 #: src/components/settings/SettingsDialogShell.tsx
@@ -1554,6 +1606,10 @@ msgstr ""
 msgid "Couldn't load conflict content for {filePath}. Try reloading the page."
 msgstr ""
 
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
+msgid "Couldn't load docs — type @ again to retry"
+msgstr ""
+
 #: src/components/DocumentErrorBoundary.tsx
 msgid "Couldn't load document"
 msgstr ""
@@ -1574,6 +1630,10 @@ msgstr ""
 msgid "Couldn't open document"
 msgstr ""
 
+#: src/components/BottomComposer.tsx
+msgid "Couldn't open the terminal — please try again."
+msgstr ""
+
 #: src/components/ConnectingBanner.tsx
 msgid "Couldn't reach collab server — {errorDetail}. Try <0>ok status</0> or check <1>.ok/local/last-spawn-error.log</1>."
 msgstr ""
@@ -1584,10 +1644,6 @@ msgstr ""
 
 #: src/components/CommandPalette.tsx
 msgid "Couldn't reach the embeddings provider — press ↵ to retry"
-msgstr ""
-
-#: src/editor/bubble-menu/EditWithAiBubbleButton.tsx
-msgid "Couldn't read the selection — please try again."
 msgstr ""
 
 #: src/components/EditorActivityPool.tsx
@@ -1622,9 +1678,12 @@ msgstr ""
 msgid "Couldn't save the resolution for {filePath}."
 msgstr ""
 
-#: src/components/EditorPane.tsx
 #: src/components/handoff/EditWithAiPopover.tsx
 msgid "Couldn't send the selection — please try again."
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Couldn't send your prompt — please try again."
 msgstr ""
 
 #: src/components/ConsentDialogBody.tsx
@@ -1652,6 +1711,10 @@ msgstr ""
 
 #: src/components/CreateProjectDialog.tsx
 msgid "Create a new Open Knowledge project in the folder of your choice."
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Create a new spec file for my user story"
 msgstr ""
 
 #: src/components/NewItemDialog.tsx
@@ -1724,6 +1787,14 @@ msgstr ""
 #: src/editor/extensions/InternalLinkPropPanel.tsx
 #: src/editor/extensions/WikiLinkPropPanel.tsx
 msgid "Creating..."
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Cursor (CLI)"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Cursor CLI"
 msgstr ""
 
 #: src/editor/extensions/WikiLinkPropPanel.tsx
@@ -1813,6 +1884,10 @@ msgstr ""
 msgid "Describe what you want to build, start a blank file, or scaffold from a template."
 msgstr ""
 
+#: src/components/empty-state/CreatePromptComposer.tsx
+msgid "Describe what you want to create to continue"
+msgstr ""
+
 #: src/components/empty-state/empty-state-copy.ts
 msgid "Describe what you're working on and the agent sets it up for you."
 msgstr ""
@@ -1826,6 +1901,7 @@ msgid "Description (optional)"
 msgstr ""
 
 #: src/components/empty-state/CreatePromptComposer.tsx
+#: src/components/handoff/AgentSplitButton.tsx
 #: src/components/handoff/OpenInAgentContextSubmenu.tsx
 #: src/components/handoff/OpenInAgentEmptySpaceSubmenu.tsx
 #: src/components/handoff/OpenInAgentMenu.tsx
@@ -1899,6 +1975,10 @@ msgstr ""
 
 #: src/components/TrashFailureModal.tsx
 msgid "Do you want to permanently delete instead?"
+msgstr ""
+
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
+msgid "Doc mention suggestions"
 msgstr ""
 
 #: src/components/HelpPopover.tsx
@@ -2059,8 +2139,6 @@ msgid "Edit wiki link"
 msgstr ""
 
 #: src/components/handoff/EditWithAiPopover.tsx
-#: src/editor/bubble-menu/EditWithAiBubbleButton.tsx
-#: src/lib/keyboard-shortcuts.ts
 msgid "Edit with AI"
 msgstr ""
 
@@ -2574,6 +2652,7 @@ msgid "folder"
 msgstr ""
 
 #: src/components/share-metadata-rows.tsx
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
 #: src/editor/extensions/InternalLinkPropPanel.tsx
 #: src/editor/extensions/WikiLinkPropPanel.tsx
 #: src/editor/link-path-suggestions.tsx
@@ -2789,6 +2868,10 @@ msgstr ""
 
 #: src/editor/find-replace/FindReplaceBar.tsx
 msgid "Hide replace"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Hide selection preview"
 msgstr ""
 
 #: src/components/FileTree.tsx
@@ -3645,6 +3728,7 @@ msgstr ""
 msgid "No Incoming"
 msgstr ""
 
+#: src/components/BottomComposer.tsx
 #: src/components/handoff/EditWithAiPopover.tsx
 #: src/components/handoff/OpenInAgentContextSubmenu.tsx
 #: src/components/handoff/OpenInAgentMenu.tsx
@@ -3669,6 +3753,10 @@ msgstr ""
 
 #: src/components/CommandPalette.tsx
 msgid "No matching commands."
+msgstr ""
+
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
+msgid "No matching docs"
 msgstr ""
 
 #: src/editor/link-path-suggestions.tsx
@@ -3919,6 +4007,14 @@ msgid "Open an existing project folder from disk."
 msgstr ""
 
 #: src/lib/keyboard-shortcuts.ts
+msgid "Open and focus the Ask AI composer for the current editor selection."
+msgstr ""
+
+#: src/lib/keyboard-shortcuts.ts
+msgid "Open and focus the bottom Ask AI prompt composer."
+msgstr ""
+
+#: src/lib/keyboard-shortcuts.ts
 msgid "Open CodeMirror search in source editor mode."
 msgstr ""
 
@@ -4060,10 +4156,6 @@ msgstr ""
 
 #: src/lib/keyboard-shortcuts.ts
 msgid "Open the insert menu in an empty or active text position."
-msgstr ""
-
-#: src/lib/keyboard-shortcuts.ts
-msgid "Open the Open with AI menu for the current editor selection."
 msgstr ""
 
 #: src/lib/keyboard-shortcuts.ts
@@ -4587,8 +4679,16 @@ msgstr ""
 msgid "Remove {chip}"
 msgstr ""
 
+#: src/editor/composer-mention/composer-mention.ts
+msgid "Remove {fullLabel} from context"
+msgstr ""
+
 #: src/components/FrontmatterRow.tsx
 msgid "Remove {keyName}"
+msgstr ""
+
+#: src/components/ComposerContextChips.tsx
+msgid "Remove {label} from context"
 msgstr ""
 
 #: src/components/settings/OkignoreSection.tsx
@@ -4622,6 +4722,10 @@ msgstr ""
 
 #: src/components/TemplateForm.tsx
 msgid "Remove property"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Remove selection"
 msgstr ""
 
 #: src/components/CreateProjectDialog.tsx
@@ -4709,6 +4813,10 @@ msgstr ""
 
 #: src/components/handoff/OpenInAgentMenuItem.tsx
 msgid "Requires {brand}."
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Research the extinction of flightless birds"
 msgstr ""
 
 #: src/components/TemplateForm.tsx
@@ -4973,6 +5081,10 @@ msgstr ""
 
 #: src/components/CommandPalette.tsx
 msgid "Searching by meaning"
+msgstr ""
+
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
+msgid "Searching docs"
 msgstr ""
 
 #: src/editor/slash-command/items.tsx
@@ -5245,6 +5357,10 @@ msgstr ""
 msgid "Show replace"
 msgstr ""
 
+#: src/components/BottomComposer.tsx
+msgid "Show selection preview"
+msgstr ""
+
 #: src/editor/components/Pdf.tsx
 msgid "Show thumbnails"
 msgstr ""
@@ -5261,6 +5377,10 @@ msgstr ""
 #. placeholder {0}: items.length
 #: src/editor/wiki-link-suggestion/WikiLinkSuggestionMenu.tsx
 msgid "Showing top {0} matches — keep typing to narrow"
+msgstr ""
+
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
+msgid "Showing top matches — keep typing to narrow"
 msgstr ""
 
 #: src/editor/extensions/CodeBlockView.tsx
@@ -5425,6 +5545,10 @@ msgstr ""
 
 #: src/lib/keyboard-shortcuts.ts
 msgid "Suggestion menu open"
+msgstr ""
+
+#: src/components/BottomComposer.tsx
+msgid "Summarize everything I changed this week"
 msgstr ""
 
 #: src/components/CommandPalette.tsx
@@ -5602,6 +5726,7 @@ msgid "Templates available"
 msgstr ""
 
 #: src/components/empty-state/CreatePromptComposer.tsx
+#: src/components/handoff/AgentSplitButton.tsx
 #: src/components/handoff/OpenInAgentContextSubmenu.tsx
 #: src/components/handoff/OpenInAgentEmptySpaceSubmenu.tsx
 #: src/components/handoff/OpenInAgentMenu.tsx
@@ -5971,6 +6096,10 @@ msgstr ""
 
 #: src/editor/components/CodePreviewEditModal.tsx
 msgid "Type to edit; <0>⌘ Enter</0> saves, <1>Esc</1> cancels."
+msgstr ""
+
+#: src/editor/composer-mention/ComposerMentionMenu.tsx
+msgid "Type to find a doc"
 msgstr ""
 
 #: src/components/AutoSyncEnableWarning.tsx

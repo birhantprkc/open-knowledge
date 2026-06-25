@@ -6,14 +6,13 @@ import type { Config } from '@inkeep/open-knowledge-core';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
-import { OpenInAgentMenuRequestProvider } from '@/components/handoff/OpenInAgentMenuRequestContext';
+import { subscribeToOpenAskAiComposer } from '@/components/ask-ai-composer-events';
 import { OUTLINE_NAV_EVENT, type OutlineNavDetail } from '@/components/OutlinePanel';
 import { ConfigContext, type ConfigContextValue } from '@/lib/config-context';
 import { evictCmEditor } from './editor-cache';
 import { SourceEditor } from './SourceEditor';
 
 const originalFetch = globalThis.fetch;
-const openRequests: unknown[] = [];
 (globalThis as { Window?: typeof window.Window }).Window = window.Window;
 Object.defineProperty(window.Range.prototype, 'getClientRects', {
   configurable: true,
@@ -25,6 +24,9 @@ Object.defineProperty(window.Range.prototype, 'getBoundingClientRect', {
 });
 
 const mountedDocNames = new Set<string>();
+
+let composerOpenRequests = 0;
+let unsubscribeComposer: (() => void) | null = null;
 
 function makeConfigValue(wordWrap: boolean): ConfigContextValue {
   return {
@@ -77,21 +79,12 @@ function Harness({
 }) {
   return (
     <ConfigContext value={makeConfigValue(wordWrap)}>
-      <OpenInAgentMenuRequestProvider
-        value={{
-          openSelection(request) {
-            openRequests.push(request);
-            return true;
-          },
-        }}
-      >
-        <SourceEditor
-          docName={provider.configuration.name ?? 'test-source'}
-          ytext={ytext}
-          provider={provider}
-          isSourceModeActive={isSourceModeActive}
-        />
-      </OpenInAgentMenuRequestProvider>
+      <SourceEditor
+        docName={provider.configuration.name ?? 'test-source'}
+        ytext={ytext}
+        provider={provider}
+        isSourceModeActive={isSourceModeActive}
+      />
     </ConfigContext>
   );
 }
@@ -112,6 +105,10 @@ function setPlatform(platform: string): void {
 
 describe('SourceEditor word-wrap preference wiring', () => {
   beforeEach(() => {
+    composerOpenRequests = 0;
+    unsubscribeComposer = subscribeToOpenAskAiComposer(() => {
+      composerOpenRequests += 1;
+    });
     globalThis.fetch = mock(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === '/api/pages') return Response.json({ pages: [] });
@@ -122,12 +119,13 @@ describe('SourceEditor word-wrap preference wiring', () => {
   });
 
   afterEach(() => {
+    unsubscribeComposer?.();
+    unsubscribeComposer = null;
     cleanup();
     for (const docName of mountedDocNames) {
       evictCmEditor(docName);
     }
     mountedDocNames.clear();
-    openRequests.length = 0;
     globalThis.fetch = originalFetch;
   });
 
@@ -158,7 +156,7 @@ describe('SourceEditor word-wrap preference wiring', () => {
     expect(container.querySelector('.cm-editor')).toBe(cmEditor);
   });
 
-  test('Cmd+Shift+I requests the header Open with AI menu with the source selection', async () => {
+  test('Cmd+Shift+I opens the Ask AI composer', async () => {
     setPlatform('MacIntel');
     const { provider, ytext } = makeProvider('source-edit-with-ai');
     const { container } = render(<Harness provider={provider} ytext={ytext} wordWrap={true} />);
@@ -181,13 +179,7 @@ describe('SourceEditor word-wrap preference wiring', () => {
       );
     });
 
-    expect(openRequests).toEqual([
-      {
-        docName: 'source-edit-with-ai',
-        instruction: '',
-        selectionMarkdown: 'heading',
-      },
-    ]);
+    expect(composerOpenRequests).toBe(1);
   });
 
   test('Cmd+Shift+I does not fire when source mode is inactive', async () => {
@@ -215,7 +207,7 @@ describe('SourceEditor word-wrap preference wiring', () => {
       );
     });
 
-    expect(openRequests).toEqual([]);
+    expect(composerOpenRequests).toBe(0);
   });
 
   test('Cmd+Shift+I does not fire on non-macOS', async () => {
@@ -241,7 +233,7 @@ describe('SourceEditor word-wrap preference wiring', () => {
       );
     });
 
-    expect(openRequests).toEqual([]);
+    expect(composerOpenRequests).toBe(0);
   });
 });
 

@@ -58,6 +58,13 @@ export const DEFAULT_VECTOR_SIMILARITY_FLOOR = 0;
 export const DEFAULT_FOLDER_RESULT_CAP = 3;
 export const DEFAULT_FILE_RESULT_CAP = 3;
 
+const DEFAULT_LEXICAL_RESULT_CAP = MAX_WORKSPACE_SEARCH_LIMIT;
+export const DEFAULT_BODY_RESULT_CAP = 6;
+export const DEFAULT_PATH_ONLY_RESULT_CAP = 4;
+
+const LEXICAL_BRACKET_FLOOR = 500;
+const PATH_SUBSTRING_BRACKET = 450;
+
 const WORKSPACE_SEARCH_SCHEMA = {
   id: 'string',
   kind: 'enum',
@@ -313,16 +320,43 @@ function toleranceFor(intent: WorkspaceSearchIntent, query: string): number {
   return intent === 'full_text' ? 1 : 0;
 }
 
+type SearchCategory = 'lexical' | 'body' | 'pathOnly';
+
+function categorize(result: WorkspaceSearchResult): SearchCategory {
+  const { lexical, fullText } = result.signals;
+  if (lexical >= LEXICAL_BRACKET_FLOOR) return 'lexical';
+  if (lexical === PATH_SUBSTRING_BRACKET && fullText <= 0) return 'pathOnly';
+  return 'body';
+}
+
+function applyCategoryCaps(ranked: readonly WorkspaceSearchResult[]): WorkspaceSearchResult[] {
+  const lexical: WorkspaceSearchResult[] = [];
+  const body: WorkspaceSearchResult[] = [];
+  const pathOnly: WorkspaceSearchResult[] = [];
+  for (const result of ranked) {
+    const category = categorize(result);
+    if (category === 'lexical') {
+      if (lexical.length < DEFAULT_LEXICAL_RESULT_CAP) lexical.push(result);
+    } else if (category === 'body') {
+      if (body.length < DEFAULT_BODY_RESULT_CAP) body.push(result);
+    } else if (pathOnly.length < DEFAULT_PATH_ONLY_RESULT_CAP) {
+      pathOnly.push(result);
+    }
+  }
+  return [...lexical, ...body, ...pathOnly];
+}
+
 function finalizeResults(
   ranked: readonly WorkspaceSearchResult[],
   ranking: WorkspaceSearchRanking,
   limit: number,
 ): WorkspaceSearchResult[] {
   if (ranking === 'relevance') return ranked.slice(0, limit);
+  const categorized = applyCategoryCaps(ranked);
   const selected: WorkspaceSearchResult[] = [];
   let folders = 0;
   let files = 0;
-  for (const result of ranked) {
+  for (const result of categorized) {
     if (result.document.kind === 'folder') {
       if (folders >= DEFAULT_FOLDER_RESULT_CAP) continue;
       folders += 1;

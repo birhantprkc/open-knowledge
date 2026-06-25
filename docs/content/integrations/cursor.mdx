@@ -15,7 +15,7 @@ Cursor prompts you to approve a new MCP server when you next open the project. A
 
 ## Open with AI
 
-From the editor, **Open with AI ▸ Cursor** dispatches the current file, folder, or project to Cursor. Three entry points: the editor header's sparkle icon, the sidebar's right-click menu (file / folder / empty space), and the macOS **File → Open with AI** menu.
+From the editor, **Open with AI ▸ Cursor** dispatches the current file, folder, or project to Cursor. Two entry points: the sidebar's right-click menu (file / folder / empty space) and the macOS **File → Open with AI** menu. You can also hand the current doc to Cursor from the bottom **Ask AI** composer.
 
 Cursor uses a two-step handoff: Open Knowledge spawns `cursor <projectDir>` to open the workspace first, then fires the `cursor://` URL with a short prompt asking Cursor to open the target in Open Knowledge's web preview. The agent then grounds the rest of the conversation through MCP. See [Editor → Open with AI](/docs/features/editor#open-with-ai) for the full UX.
 

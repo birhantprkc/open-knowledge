@@ -175,6 +175,56 @@ describe('keyboard shortcut registry', () => {
     ).toBe(false);
   });
 
+  test('formats the open-ask-ai shortcut as Cmd/Ctrl + L', () => {
+    expect(formatShortcut('open-ask-ai', 'mac')).toBe('⌘ L');
+    expect(formatShortcut('open-ask-ai', 'windowsLinux')).toBe('Ctrl L');
+  });
+
+  test('matches the open-ask-ai shortcut on Cmd+L / Ctrl+L and excludes extra modifiers', () => {
+    expect(
+      matchesKeyboardShortcut(
+        { metaKey: true, ctrlKey: false, altKey: false, key: 'l' },
+        'open-ask-ai',
+        'mac',
+      ),
+    ).toBe(true);
+    expect(
+      matchesKeyboardShortcut(
+        { metaKey: false, ctrlKey: true, altKey: false, key: 'l' },
+        'open-ask-ai',
+        'windowsLinux',
+      ),
+    ).toBe(true);
+    expect(
+      matchesKeyboardShortcut(
+        { metaKey: false, ctrlKey: true, altKey: false, key: 'l' },
+        'open-ask-ai',
+        'mac',
+      ),
+    ).toBe(false);
+    expect(
+      matchesKeyboardShortcut(
+        { metaKey: true, ctrlKey: false, altKey: false, shiftKey: true, key: 'l' },
+        'open-ask-ai',
+        'mac',
+      ),
+    ).toBe(false);
+    expect(
+      matchesKeyboardShortcut(
+        { metaKey: true, ctrlKey: false, altKey: true, key: 'l' },
+        'open-ask-ai',
+        'mac',
+      ),
+    ).toBe(false);
+    expect(
+      matchesKeyboardShortcut(
+        { metaKey: false, ctrlKey: false, altKey: false, key: 'l' },
+        'open-ask-ai',
+        'mac',
+      ),
+    ).toBe(false);
+  });
+
   test('matches command palette with allowed extra modifiers and rejects missing mod', () => {
     expect(
       matchesKeyboardShortcut(

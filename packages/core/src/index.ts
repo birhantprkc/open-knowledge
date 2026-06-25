@@ -348,13 +348,18 @@ export {
   parseWorktreeListPorcelain,
 } from './git/worktree-list-parser.ts';
 export {
+  type AssembleHandoffPromptInput,
+  assembleHandoffPrompt,
   assertNeverUrnIpcLookup,
   buildClaudeLaunchCommand,
   buildClaudeUrl,
   buildCliLaunchCommand,
   buildCodexUrl,
   buildCursorUrl,
+  type ComposeSelection,
   type CreateScenario,
+  composeAskProjectPrompt,
+  composeAskPrompt,
   composeCreatePrompt,
   composeEmptySpacePrompt,
   composeFilePrompt,

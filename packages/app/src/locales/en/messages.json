@@ -17,7 +17,6 @@
     "-Q7TT9": ["That folder isn't an Open Knowledge project yet. Initialize it and open?"],
     "-QCLWk": ["Templates available"],
     "-Qw-1t": ["GitHub authentication failed. Try signing in again."],
-    "-RXIMO": ["Couldn't read the selection — please try again."],
     "-WFFG2": ["Default properties"],
     "-YV1Uo": ["Pattern ", ["patternNumber"]],
     "-g6KIS": ["Unrecognized link"],
@@ -35,12 +34,15 @@
     "0-31GV": ["Removing"],
     "02P3hL": ["Upload failed: ", ["message"]],
     "04RA0-": ["Failed to enable sync — ", ["detail"]],
+    "05n5wS": ["Doc mention suggestions"],
     "06SZfb": ["Template \"", ["trimmedTitle"], "\" created"],
     "07gHun": ["You don't have access to this private repo. Sign in with an account that does."],
     "07q4Qk": ["File sidebar"],
     "09Tv5j": ["Reconnecting…"],
     "0BB9ID": ["No headings yet."],
+    "0E9DR6": ["Type to find a doc"],
     "0Gd0NU": ["Shared"],
+    "0HYJGg": ["Cursor (CLI)"],
     "0NA4b3": ["Keep my version"],
     "0YEbfk": ["Connect to AI tools"],
     "0_J12R": [
@@ -69,6 +71,7 @@
     "16D5Zj": ["Are you sure you want to delete ", ["itemName"], "? This action cannot be undone."],
     "1AumWo": ["Push failed — check the server logs for details."],
     "1EcCom": [["keyName"], " value"],
+    "1FLarN": ["Describe what you want to create to continue"],
     "1GhYxC": ["of ", ["totalPages"]],
     "1HBhDS": ["Checking out files"],
     "1MGRQl": ["Terminal sessions"],
@@ -141,6 +144,7 @@
     "3h5zMp": ["Something went wrong loading the settings panel."],
     "3iyGWF": ["Open recent project"],
     "3jod3l": ["Connect GitHub"],
+    "3m2GBo": ["Searching docs"],
     "3mFsc3": ["Restore with remote changes"],
     "3o3tur": ["Starter content"],
     "3oh0nQ": ["Nested .okignore error in ", ["path"]],
@@ -194,6 +198,7 @@
       ["path"],
       ". Agents that reference this template by name will fail until it's recreated or replaced by one in a parent folder."
     ],
+    "5OTgC7": ["Open and focus the bottom Ask AI prompt composer."],
     "5OqaJi": ["Enter a project name"],
     "5QGTaA": ["Could not copy relative path"],
     "5SwVv1": ["Not installed"],
@@ -287,6 +292,7 @@
     "7JtSLi": ["Failed to delete path"],
     "7KeV5F": ["Undo all failed: ", ["message"]],
     "7OhaRy": ["Source search"],
+    "7Ongq0": ["Condense my AGENTS.md file to less than 40k characters"],
     "7OwvEL": ["Show HTML preview"],
     "7PNNNs": ["This sends content off your machine"],
     "7PzzBU": ["User"],
@@ -298,7 +304,6 @@
     ],
     "7d1a0d": ["Public"],
     "7hctf2": ["Describe the project you want to create"],
-    "7kdoVR": ["Open the Open with AI menu for the current editor selection."],
     "7nrKys": [
       "Open Knowledge is using a GitHub account provided by the gh CLI. There's no separate Open Knowledge credential to disconnect."
     ],
@@ -401,6 +406,7 @@
     ],
     "AVW-K9": ["Failed to load orphan pages"],
     "AWOSPo": ["Zoom in"],
+    "AcK_r0": ["Claude CLI"],
     "AdcGcG": ["Applying your change"],
     "AddR83": ["Could not create project. Try again or pick a different location."],
     "AeHuzT": ["# One pattern per line.\n# Examples:\n#   drafts/\n#   *.draft.md\n#   !keep.md"],
@@ -503,6 +509,7 @@
     "EOjU5V": ["Inline Math Properties"],
     "ETyvvg": ["No language match."],
     "EVnzPs": ["Edit with AI"],
+    "EWX92Z": ["Collapse Ask AI"],
     "EZVxVz": ["Replace the active match from the replace field."],
     "E_BHoD": [
       "Could not move \"",
@@ -534,7 +541,9 @@
     "Evq3lu": ["Orphan mode"],
     "ExPiRQ": ["Move to the next CodeMirror lint diagnostic."],
     "F-NRCj": ["Add property"],
+    "F-vBv0": ["Ask"],
     "F0OA00": ["Get ", ["displayName"]],
+    "F1T9y_": ["Showing top matches — keep typing to narrow"],
     "F4IYWe": ["Share doc"],
     "F4vEsL": ["Sync status: ", ["syncStateLabel"]],
     "F6pfE9": ["Active"],
@@ -564,6 +573,7 @@
     "G0YZ-I": ["Indent or outdent list item"],
     "G1Gw0v": ["New template"],
     "G1XxbZ": ["Checkbox"],
+    "G4-bgo": ["Ask AI (from selection)"],
     "G7-rf8": ["Pattern syntax error: ", ["message"]],
     "G7cMuO": ["HTML preview"],
     "G8t9NN": ["Add a property"],
@@ -600,6 +610,7 @@
     "HIb0vl": ["Network error — please try again"],
     "HM56Bx": ["Creating..."],
     "HNnVG1": ["No other recent projects."],
+    "HPTPGr": ["Create a new spec file for my user story"],
     "HRU-eL": [
       "You picked ~/Documents. Open Knowledge will index every markdown file under it. If you only want to manage a sub-folder, choose a smaller scope."
     ],
@@ -677,6 +688,7 @@
     "KRJ6xh": ["No tags yet. Continue typing to create one."],
     "KWL_Ih": ["Blog post"],
     "KX1MZR": ["Your repositories"],
+    "KYSocE": ["Research the extinction of flightless birds"],
     "KYcZ6Y": ["Above"],
     "KZLdgR": ["See <0>#design-docs</0> for the latest specs."],
     "K_vT1F": ["Upstream sync"],
@@ -818,6 +830,7 @@
     "ONPvOb": ["Loading agent activity"],
     "ONgEZF": ["Loading headings for ", ["pageTarget"]],
     "OTF92M": ["Label <0>(optional display text)</0>"],
+    "OUcBW4": ["Codex CLI"],
     "OVjNeX": ["Terminal ", ["0"]],
     "OX2Neh": ["Inline code"],
     "OYnx7O": ["Path cannot start with \"/\""],
@@ -975,6 +988,7 @@
     "UW93oq": ["Replace key"],
     "UYcGIW": ["Connecting — waiting for collab server"],
     "Ua78MH": ["no response"],
+    "UaDyeb": ["Hide selection preview"],
     "UaXXIF": [
       "Available in the Open Knowledge desktop app. From a terminal, use<0> ok config-sharing status</0> / <1>share</1> / <2>unshare</2>."
     ],
@@ -1083,6 +1097,7 @@
     "Xv_ijG": ["https://github.com/owner/repo or owner/repo"],
     "Xw_maT": ["Type a query, then press ↵ to search your pages by meaning."],
     "XyOUTJ": ["Exit merge"],
+    "Xzy0s0": ["Remove ", ["fullLabel"], " from context"],
     "Y-Urt2": ["Block math equation rendered with KaTeX from a LaTeX source string."],
     "Y8ViJx": ["A newer version may have been deployed since this tab opened."],
     "YC6_wP": ["Edit ", ["keyName"]],
@@ -1099,6 +1114,7 @@
     "Yi0VMG": ["Upload ", ["keyName"]],
     "YjhKI5": ["Cloning..."],
     "YlDuro": ["Fit height"],
+    "YoLi1r": ["Claude (CLI)"],
     "YsEYYS": [
       ["behind", "plural", { "one": ["#", " commit behind"], "other": ["#", " commits behind"] }]
     ],
@@ -1176,6 +1192,7 @@
     "_rP3HI": [["minutes"], "m ago"],
     "_tekeB": ["updated folder properties"],
     "a-cKXz": ["Select all source"],
+    "a3H_MR": ["Open and focus the Ask AI composer for the current editor selection."],
     "a5Gha5": ["Local changes blocked the merge"],
     "a5W0q0": [
       "Are you sure you want to delete ",
@@ -1250,6 +1267,7 @@
     "cZ_8zB": ["Stays on this computer."],
     "cdm00A": ["No Incoming"],
     "cdmk8A": ["Uncommitted changes"],
+    "cio8--": ["Codex (CLI)"],
     "cklVjM": ["Timeline"],
     "cnGeoo": ["Delete"],
     "coIbL2": [
@@ -1304,6 +1322,7 @@
     "eSu2Xn": [
       "Writes a project-MCP config for each selected tool; Claude also gets <0>.claude/launch.json</0>."
     ],
+    "eTL5y9": ["Show selection preview"],
     "eVPynQ": ["Open <0><1>", ["verificationUri"], "</1><2/></0> and enter this code:"],
     "emgiet": ["Authoritative content; mirrored verbatim everywhere it's referenced."],
     "euc6Ns": ["Duplicate"],
@@ -1324,6 +1343,7 @@
     "fYjgXu": ["Unordered list of items."],
     "fbdLmk": ["Toggle bold formatting."],
     "fbsiBw": ["Something went wrong starting the terminal."],
+    "fcgvCA": ["Claude"],
     "fiMNLl": ["Sync settings not yet loaded — try again in a moment"],
     "fqSfXY": ["Replace"],
     "fwhX-N": ["Indent or outdent source"],
@@ -1391,6 +1411,7 @@
     "haHgQj": ["Copied relative path"],
     "he3ygx": ["Copy"],
     "hjO0Mq": ["Add tab"],
+    "hnq8fP": ["Remove ", ["label"], " from context"],
     "hpDtUm": ["External wiki link"],
     "hwFOFD": ["Settings failed to load"],
     "hxBHxQ": ["A line with a footnote<0><1>[1]</1></0> and a definition shown below."],
@@ -1430,6 +1451,7 @@
     "iqIDv4": ["Sync status unavailable"],
     "iqugog": ["Initialize failed: ", ["errorDetail"]],
     "irFGwu": ["Template list"],
+    "irrm_E": ["Remove selection"],
     "isRobC": ["New"],
     "iuTKci": ["No edits yet."],
     "iycx_A": ["Pushing"],
@@ -1437,6 +1459,7 @@
       "This project's running server doesn't support live editing. Restart Open Knowledge to fix."
     ],
     "j9Vqvc": ["inherited"],
+    "jBVUXo": ["Couldn't open the terminal — please try again."],
     "jEZ6Lf": ["provisional"],
     "jEdF24": ["Missing page: ", ["linkTitle"], ". Click to create."],
     "jGJy-9": ["Downloads ", ["shareOwner"], "/", ["shareRepo"], " from GitHub."],
@@ -1572,6 +1595,7 @@
     "nNYV3Y": ["and ", ["remaining"], " more"],
     "nPhvQ_": ["Claude Code is installed, but Open Knowledge tools aren't connected to it yet."],
     "nTwL53": ["Open a doc to share its URL."],
+    "nUNZL4": ["Ask ", ["0"]],
     "nWv1ja": ["Manage hidden files in Settings → Ignore patterns."],
     "nYKerc": ["(user-level only)"],
     "nYeBmY": [["hours"], "h ago"],
@@ -1614,6 +1638,7 @@
       "The terminal is turned off for this project. Turn it back on to run commands here."
     ],
     "ogAuyr": ["Back to document view"],
+    "oh55a-": ["Cursor CLI"],
     "omXJcU": ["Close others"],
     "optX0N": [["0"], "h ago"],
     "oqB2ez": ["Previous match"],
@@ -1675,6 +1700,7 @@
     "qbfj1f": ["Receiving objects"],
     "qdBUHP": ["Couldn't load ", ["fileName"]],
     "qi1F96": ["Reveal in File Explorer"],
+    "qiRoLb": ["Summarize everything I changed this week"],
     "qioCwA": ["Jump to page ", ["pageNumber"]],
     "qjHMHf": ["Failed to disable sync — ", ["detail"]],
     "qo4zCg": ["Path cannot contain backslashes"],
@@ -1850,6 +1876,7 @@
     "wXO4Tg": [["hrs"], "h ago"],
     "wbv9xO": ["Create new project"],
     "wbwHYD": ["Enable sync"],
+    "weP6me": ["Couldn't load docs — type @ again to retry"],
     "wlwXUk": [
       "You picked ~/Downloads. Files there are usually transient — consider a stable folder instead."
     ],
@@ -1874,6 +1901,7 @@
     "xNyj3h": ["Reinstall for Claude Chat & Cowork"],
     "xOTzt5": ["just now"],
     "xSVO3J": ["What gets created"],
+    "xWEvuo": ["Ask AI"],
     "xXo8FT": ["Save failed: ", ["error"]],
     "xYMPyY": [
       "Paste was incomplete — ",
@@ -1896,6 +1924,7 @@
     "y3aU20": ["Save changes"],
     "y46m5r": ["The desktop app isn't responding. Refresh and try again."],
     "y5FUYi": ["Suggestion menu open"],
+    "y8B54M": ["Couldn't send your prompt — please try again."],
     "yCX4jp": [" Your selection could not be restored."],
     "yEJ-sl": [
       "The preview blocks resources that don't meet its security rules (for example plain http:// URLs, or code that uses eval). The content above may render incompletely."
@@ -1917,6 +1946,7 @@
     "yLq4w4": ["Separator"],
     "yMgL_E": ["Find field navigation"],
     "yQE2r9": ["Loading"],
+    "yQyglE": ["No matching docs"],
     "yUxR-Q": ["Expand ", ["keyName"]],
     "yWWThY": ["Asset reference"],
     "yYR6za": ["Display text"],

@@ -26,7 +26,7 @@ import { buildUnresolvedWikiLinkAttrs } from './wiki-link-helpers';
 export const wikiLinkSuggestionKey = new PluginKey('wikiLinkSuggestion');
 
 export interface PageItem {
-  kind?: 'page' | 'asset';
+  kind?: 'page' | 'asset' | 'folder';
   docName: string;
   title: string;
 }
@@ -252,7 +252,16 @@ export async function fetchPages(): Promise<PageItem[]> {
       return { kind: 'asset', docName: `/${asset.path}`, title };
     });
 
-  return [...pages, ...assets];
+  const folders = docData.documents
+    .filter((entry): entry is { kind: 'folder'; path: string } => {
+      return entry.kind === 'folder' && typeof entry.path === 'string' && entry.path.length > 0;
+    })
+    .map((folder): PageItem => {
+      const title = folder.path.split('/').pop() ?? folder.path;
+      return { kind: 'folder', docName: folder.path, title };
+    });
+
+  return [...pages, ...assets, ...folders];
 }
 
 export async function fetchHeadings(docName: string): Promise<HeadingEntry[]> {

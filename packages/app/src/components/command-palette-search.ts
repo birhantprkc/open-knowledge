@@ -1,6 +1,8 @@
 import {
   createWorkspaceSearchCorpus,
   createWorkspaceSearchDocument,
+  type InlineAssetMediaKind,
+  mediaKindForSidebarAssetExtension,
   searchWorkspaceCorpus,
   type WorkspaceSearchCorpus,
   type WorkspaceSearchDocument,
@@ -16,6 +18,20 @@ export interface WorkspaceEntry {
   title?: string;
   modifiedTs?: number;
   bodyIndexed?: boolean;
+  assetExt?: string;
+  mediaKind?: InlineAssetMediaKind | null;
+}
+
+function fileIconFields(path: string): {
+  assetExt?: string;
+  mediaKind?: InlineAssetMediaKind | null;
+} {
+  const dot = path.lastIndexOf('.');
+  const slash = path.lastIndexOf('/');
+  if (dot <= slash + 1) return {};
+  const assetExt = path.slice(dot + 1).toLowerCase();
+  if (assetExt === '') return {};
+  return { assetExt, mediaKind: mediaKindForSidebarAssetExtension(assetExt) };
 }
 
 export interface WorkspaceSearchEntry extends WorkspaceEntry {
@@ -87,6 +103,7 @@ export function buildWorkspaceEntries(
       path,
       name: workspaceSearchBasename(path),
       bodyIndexed: false,
+      ...fileIconFields(path),
     });
   }
   for (const path of folderPaths) {
@@ -228,13 +245,16 @@ function toWorkspaceSearchEntry(
     return null;
   }
   const name = workspaceSearchBasename(row.path);
+  const kind = row.kind === 'folder' ? 'folder' : 'file';
+  const iconFields = row.kind === 'file' ? fileIconFields(row.path) : {};
   return {
-    kind: row.kind === 'folder' ? 'folder' : 'file',
+    kind,
     path: row.path,
     name,
     ...(row.title && { title: row.title }),
     ...(row.snippet && { snippet: row.snippet }),
     ...(typeof row.score === 'number' && { score: row.score }),
+    ...iconFields,
   };
 }
 

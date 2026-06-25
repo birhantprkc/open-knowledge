@@ -1007,7 +1007,7 @@ tags: [person]
 
 ## Compiled truth
 
-(Your current best understanding. Rewrite this section as new evidence changes the synthesis. Prefer path-qualified links such as [[companies/acme|Acme]] when identity matters.)
+(Your current best understanding. Rewrite this section as new evidence changes the synthesis. Prefer path-qualified links such as \`[[companies/acme|Acme]]\` when identity matters.)
 
 --- timeline ---
 
@@ -1029,7 +1029,7 @@ tags: [company]
 
 ## Compiled truth
 
-(Your current best understanding of the company. Rewrite this section as new evidence changes the synthesis. Prefer path-qualified links such as [[people/jane-founder|Jane Founder]].)
+(Your current best understanding of the company. Rewrite this section as new evidence changes the synthesis. Prefer path-qualified links such as \`[[people/jane-founder|Jane Founder]]\`.)
 
 --- timeline ---
 
@@ -1052,7 +1052,7 @@ tags: [meeting]
 
 ## Notes
 
-(Raw notes from the meeting. Prefer path-qualified links such as [[people/jane-founder|Jane Founder]], [[companies/jane-co|Jane Co]], and [[concepts/agent-runtime-observability|agent-runtime observability]].)
+(Raw notes from the meeting. Prefer path-qualified links such as \`[[people/jane-founder|Jane Founder]]\`, \`[[companies/jane-co|Jane Co]]\`, and \`[[concepts/agent-runtime-observability|agent-runtime observability]]\`.)
 
 ## Action items
 
@@ -1135,16 +1135,16 @@ What to log:
 
 **Reference docs as markdown links, not bare paths.** Every doc you touched should appear as \`[name](./path/to/doc.md)\` so the log shows up in \`links({ kind: "backlinks" })\` for those docs.
 
-<!-- Example entry shape:
+Example entry shape:
 
+\`\`\`markdown
 ## YYYY-MM-DD: <short title>
 
 - <what was done>
 - Dossiers updated: [Jane Founder](./people/jane-founder.md), [Jane Co](./companies/jane-co.md)
 - Meetings logged: [2026-05-12 coffee](./meetings/2026-05-12-jane-founder-coffee.md)
 - Open follow-ups: <topic-1>, <topic-2>
-
--->
+\`\`\`
 `;
 
 const ENTITY_VAULT_USER_MD = `---
@@ -1288,7 +1288,7 @@ tags: [concept]
 
 ## Related
 
-- Link a related idea, e.g. [another concept](./another-concept.md).
+- Link a related idea, e.g. \`[another concept](./another-concept.md)\`.
 `,
   reference: `---
 template:

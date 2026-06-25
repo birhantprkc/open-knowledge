@@ -42,6 +42,8 @@ import { applyToggle, readPins, resolveEffectiveState } from '@/lib/sidebar-pin-
 import { useSettingsRoute } from '@/lib/use-settings-route';
 import { cn } from '@/lib/utils';
 import { useSyncStatus } from '@/presence/use-sync-status';
+import { BottomComposer } from './BottomComposer';
+import { shouldShowBottomComposer } from './bottom-composer-gate';
 import { EditorActivityPool } from './EditorActivityPool';
 import { EditorFooter } from './EditorFooter';
 import type { EditorMode, TerminalLaunchIntent } from './EditorPane';
@@ -141,6 +143,7 @@ function EditorAreaInner({
 
   const [embeddedHost] = useState(() => detectEmbeddedHostFromBrowser());
   const isEmbedded = embeddedHost !== null;
+  const [isDesktop] = useState(() => typeof window !== 'undefined' && window.okDesktop != null);
   const [rightPartition, setRightPartition] = useState(() =>
     resolvePartition(embeddedHost, window.innerWidth, 'right'),
   );
@@ -291,6 +294,7 @@ function EditorAreaInner({
 
   const previousDocNameRef = useRef<string | null>(null);
   const [previousDocName, setPreviousDocName] = useState<string | null>(null);
+  const [composerDismissed, setComposerDismissed] = useState(false);
   const activeDocumentHistoryName =
     activeTarget?.kind === 'large-file' ? activeTarget.docName : activeDocName;
   useEffect(() => {
@@ -408,6 +412,12 @@ function EditorAreaInner({
       requestAddProperty(activeDocName);
     }
 
+    const showBottomComposer = shouldShowBottomComposer({
+      terminalVisible,
+      isEmbedded,
+      isDesktop,
+      activeDocName,
+    });
     const editorContent = (
       <div className="relative flex h-full flex-col">
         <div className="relative min-h-0 flex-1">
@@ -494,8 +504,31 @@ function EditorAreaInner({
               onTogglePanel={togglePanel}
             />
           )}
+          {/* Floats over the bottom of the scroll area (an absolute overlay, like
+              the toolbar at the top) so content scrolls under its faded top edge.
+              BottomComposer publishes its measured height as `--ask-composer-height`
+              and globals.css pads the editor content by it so the last lines clear
+              the card; the var clears on collapse, reclaiming the space. */}
+          {showBottomComposer ? (
+            <BottomComposer
+              docName={activeDocName}
+              surface={isSourceMode ? 'source' : 'wysiwyg'}
+              dismissed={composerDismissed}
+              onDismiss={() => setComposerDismissed(true)}
+              onReopen={() => setComposerDismissed(false)}
+            />
+          ) : null}
         </div>
-        <EditorFooter stats={stats} selectionStats={selectionStats} showStats={showStats} />
+        <EditorFooter
+          stats={stats}
+          selectionStats={selectionStats}
+          showStats={showStats}
+          composerBadge={
+            showBottomComposer && composerDismissed
+              ? { onReopen: () => setComposerDismissed(false) }
+              : null
+          }
+        />
       </div>
     );
 

@@ -39,18 +39,17 @@ While spell check is off, right-clicking any editable text offers **Enable Spell
 
 Surfaces with their own specialized right-click menus — asset and wiki-link chips, the [file sidebar](#right-click-context-menus), editor tabs — keep them; the editor menu never doubles up on top. In the web build the browser's own context menu fills this role.
 
-## Edit with AI
+## Ask AI
 
-Select text in the WYSIWYG editor to hand that exact passage to an installed agent. The selection bubble menu shows an **Edit with AI** button alongside the formatting controls. Clicking it opens a popover with an instruction field and your installed-agent list (Claude, Codex, or Cursor). Type what you want done (the instruction is optional), pick an agent, and it opens with the project as its working directory and a prompt naming the doc, your instruction, and the selected passage.
+A persistent **Ask AI** composer is docked at the bottom of the editor in the desktop app, above the status bar and above the terminal dock (it's pushed up when the terminal expands). It's a slim, single-line entry field — always present when a doc is open — that expands as you type to accept a fuller prompt (and `@`-mentions). Type an instruction — "condense this doc", "research X", "make a spec from this user story" — and press Enter to hand it to an agent. `Shift+Enter` inserts a newline; the field clears once the prompt is sent.
 
-The passage travels one of two ways, chosen automatically:
+It's the primary in-editor way to hand work to an agent, and the freetext companion to the menu-driven [Open with AI](#open-with-ai) (whole file / folder / project). Submitting dispatches the typed prompt to your **default agent** — the first one installed, in Claude → Codex → Cursor order — scoped to the current doc, which the agent receives as an `@`-mention. The agent picker beside the field overrides the default per send (its targets include Claude, Codex, Cursor, and the Terminal CLI), and your choice is remembered on that machine. Success and failure use the same handoff toast as Open with AI.
 
-| Mode | When | What the agent gets |
-| --- | --- | --- |
-| Inline | The selection fits the agent's deep-link URL budget (the common case) | The passage inlined in a fenced block, plus the doc path and your instruction |
-| Locus | The selection is too large to inline | A short quote of the passage's opening plus a directive to read the full passage from the doc via the [Open Knowledge MCP](/docs/reference/mcp); nothing is truncated |
+The composer is desktop-only and stays out of the way where it doesn't belong: it's hidden inside an AI editor's embedded view, on the web build, and when no doc is open (the empty state already offers project handoff). Like the other handoffs it dispatches only to agents installed on your machine; when none are installed, the field is disabled.
 
-This is the selection-scoped sibling of the sidebar's [Open with AI](#open-with-ai), which hands off a whole file, folder, or project. Like the native handoff it's macOS-only, and unlike Open with AI it has no claude.ai web fallback: selected content stays local, dispatched only to agents installed on your machine. Install detection governs which agents appear, the same as Open with AI. Text selections only for now; selecting an image or other non-text node doesn't show the affordance.
+### From a text selection
+
+Select text in the WYSIWYG editor and the selection bubble menu shows an **Ask AI** button (Sparkles icon) alongside the formatting controls. Clicking it — or pressing the selection shortcut — opens and focuses the bottom Ask AI composer with the selected passage pinned as a removable context pill, so the exact text rides along as context. Type your instruction, pick an agent, and send. (macOS desktop only; selecting an image or other non-text node doesn't show the affordance.)
 
 ## Properties
 
@@ -117,23 +116,13 @@ On very large trees the disk walk is capped per level, and the sidebar shows a n
 
 | Scope | Triggered from | Prompt template |
 | --- | --- | --- |
-| Project | Empty-space menu · sparkle icon (no doc / folder active) | `Let's work on this project using Open Knowledge. Open the OK editor in web view.` |
-| Folder | Folder row menu · sparkle icon (folder view active) | ``Let's work on the `<folder>` folder using Open Knowledge. Open the OK editor in web view.`` |
-| File | File row menu · sparkle icon (doc active) | ``Let's work on `<path>` using Open Knowledge. Open the OK editor in web view.`` |
+| Project | Empty-space menu (no doc / folder active) | `Let's work on this project using Open Knowledge. Open the OK editor in web view.` |
+| Folder | Folder row menu (folder view active) | ``Let's work on the `<folder>` folder using Open Knowledge. Open the OK editor in web view.`` |
+| File | File row menu (doc active) | ``Let's work on `<path>` using Open Knowledge. Open the OK editor in web view.`` |
 
 The trailing `Open the OK editor in web view.` directive is dropped when the [`appearance.preview.autoOpen`](/docs/reference/configuration) preference is off, so the receiving agent honors the same "leave my preview alone" choice on its first turn; only the `Let's work on … using Open Knowledge.` opener is sent.
 
-The **sparkle icon** in the editor header opens the same handoff as a popover, picking the scope from whichever target is currently active in the editor. Unlike the right-click submenus — which dispatch in one click — this header popover adds an optional **instruction field** ("What should the AI do?"). When you type one, it's appended to the directive above as a quoted block, so the agent opens the target *and* gets your specific ask in the same prompt:
-
-```text
-Let's work on `<path>` using Open Knowledge. Open the OK editor in web view.
-
-Instruction:
-
-> <your instruction>
-```
-
-The directive line itself varies by scope (file, folder, or whole project); the example shows the file form, and the openers described above list the others. Leaving the field empty dispatches the bare directive unchanged.
+To send your own freetext instruction along with the handoff, use the bottom [Ask AI](#ask-ai) composer (or the empty-state create composer on a fresh project) rather than these one-click submenus.
 
 **Install detection** filters the submenu to just the agents you have. When the server and your browser are on the same machine (`localhost`), the filter is accurate. When you're running the server elsewhere (a hosted preview, SSH tunnel, remote dev), the submenu lists every supported agent and lets your browser's OS protocol-dispatch dialog be the truth signal.
 
@@ -141,13 +130,13 @@ The Claude **claude.ai** web fallback row appears on file-scope dispatches only;
 
 See the [per-integration pages](/docs/integrations/claude-code) for what each agent receives once dispatched.
 
-The menu is organized into two sections. **Desktop** lists the installed agent apps (Claude, Codex, Cursor); selecting one launches it via its deep link. **Terminal** (desktop app only) adds a single **Claude** row that runs the `claude` CLI in Open Knowledge's docked terminal with the same scoped prompt. Both a Desktop **Claude** (the app) and a Terminal **Claude** (the CLI) can therefore appear; screen readers tell them apart by the Terminal row's "Claude CLI" accessible name. Each section renders only when it has something to launch.
+The menu is organized into two sections. **Desktop** lists the installed agent apps (Claude, Codex, Cursor); selecting one launches it via its deep link. **Terminal** (desktop app only) adds a row for each CLI — **Claude**, **Codex**, and **Cursor** — that runs the corresponding CLI (`claude`, `codex`, `cursor`) in Open Knowledge's docked terminal with the same scoped prompt. Because both sections can list the same name, a Desktop **Claude** (the app) and a Terminal **Claude** (the CLI) can appear together; screen readers tell them apart by the Terminal row's "Claude CLI" accessible name (and likewise "Codex CLI" / "Cursor CLI"). Each section renders only when it has something to launch, so on the web build — which has no docked terminal — the Terminal section is absent and a CLI pick falls back to the first installed Desktop app target.
 
 The empty-state create composer on a fresh project carries the same Desktop / Terminal split: its Desktop rows pick the default agent the **Create** button uses, while its Terminal **Claude** row (desktop only, disabled until the workspace resolves) launches the `claude` CLI with the brief you typed.
 
 ### Open in Terminal
 
-Spawns `open -a Terminal.app <dir>` at the right path: the folder for a folder row, the file's parent for a file row, the project root for the empty-space menu, the parent dir for an asset row. Terminal.app is hardcoded for v1; user-configurable terminal preference is on the roadmap. This is distinct from the **Terminal** section inside **Open with AI**, which runs the `claude` CLI in Open Knowledge's docked terminal rather than opening Terminal.app.
+Spawns `open -a Terminal.app <dir>` at the right path: the folder for a folder row, the file's parent for a file row, the project root for the empty-space menu, the parent dir for an asset row. Terminal.app is hardcoded for v1; user-configurable terminal preference is on the roadmap. This is distinct from the **Terminal** section inside **Open with AI**, which runs a CLI (`claude`, `codex`, or `cursor`) in Open Knowledge's docked terminal rather than opening Terminal.app.
 
 ## Sidebars and window width
 
@@ -168,7 +157,7 @@ Keyboard shortcuts (use `Ctrl` on Windows / Linux in place of `Cmd`):
 
 In the desktop app the same actions live in the **View** menu (see below) and each menu label flips between **Show …** and **Hide …** based on current state, matching Finder.
 
-Inside an AI editor's embedded view, the **Open with AI** menus, the editor header's sparkle dropdown, and the empty-state agent grid are hidden; you're already inside an agent, so the handoff would loop back into the same surface. Open Knowledge's MCP tools and the document itself stay fully available; only the launchers are gone.
+Inside an AI editor's embedded view, the **Open with AI** menus, the bottom Ask AI composer, and the empty-state agent grid are hidden; you're already inside an agent, so the handoff would loop back into the same surface. Open Knowledge's MCP tools and the document itself stay fully available; only the launchers are gone.
 
 ## macOS application menus
 
@@ -187,7 +176,7 @@ Below the project navigation items (Switch Project, Open Folder, Open Recent, CL
 | **Move to Trash** | `Cmd+Delete` | Sends the active file or folder to Trash (with the same confirm modal as the sidebar). Disabled when nothing is selected. |
 | **Reveal in Finder** | (none) | Reveals the active target in Finder. Empty selection reveals the project root. |
 | **Open in Terminal** | (none) | Opens Terminal.app at the active target's directory. |
-| **Open with AI ▸** | (none) | Same submenu as the sidebar / sparkle icon, dispatched at the active scope. |
+| **Open with AI ▸** | (none) | Same submenu as the sidebar, dispatched at the active scope. |
 | **Copy Path ▸** | (none) | Full / Relative path of the active target. |
 
 **Switch Project…** moved to `Cmd+Shift+P`. The old `Cmd+Shift+N` binding now creates a new folder, matching macOS Finder, VS Code, and the broader convention.

@@ -72,6 +72,7 @@ import {
 } from '@/components/ui/command';
 import { useDocumentContext } from '@/editor/DocumentContext';
 import type { TagSummaryEntry } from '@/editor/extensions/tag-suggestion';
+import { getFileIcon } from '@/editor/registry/file-icons';
 import { useIsEmbedded } from '@/hooks/use-is-embedded';
 import { useSemanticSearchStatus } from '@/hooks/use-semantic-search-status';
 import type { OkDesktopBridge, RecentProjectEntry } from '@/lib/desktop-bridge-types';
@@ -127,7 +128,7 @@ export function NavigationItem({
   onSelect: () => void;
   disabled?: boolean;
 }) {
-  const Icon = entry.kind === 'folder' ? FolderOpen : FileText;
+  const Icon = getFileIcon(entry);
   const title =
     'title' in entry && entry.title ? entry.title : (entry.path.split('/').pop() ?? entry.path);
   const snippet = 'snippet' in entry ? entry.snippet : undefined;

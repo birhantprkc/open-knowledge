@@ -13,19 +13,11 @@ import {
   type ShareTargetInput,
 } from '@/lib/share/run-share-action';
 import { useSingleFileMode } from '@/lib/single-file-mode';
-import { useWorkspace } from '@/lib/use-workspace';
 import { cn } from '@/lib/utils';
 import { PresenceBar } from '@/presence/PresenceBar';
 import { BetaBadge } from './BetaBadge';
 import { EditorTabs } from './EditorTabs';
 import { HelpPopover } from './HelpPopover';
-import { OpenInAgentMenu } from './handoff/OpenInAgentMenu';
-import {
-  buildFolderHandoffInput,
-  buildHandoffInput,
-  buildProjectScopedHandoffInput,
-  type HandoffDispatchInput,
-} from './handoff/useHandoffDispatch';
 import { PublishToGitHubDialog } from './PublishToGitHubDialog';
 import { SettingsButton } from './SettingsButton';
 import { ShareButton } from './ShareButton';
@@ -35,42 +27,16 @@ interface EditorHeaderProps {
   onSignIn?: () => void;
   onSetIdentity?: () => void;
   onOpenSearch?: () => void;
-  openInAgentMenuOpen?: boolean;
-  openInAgentMenuInput?: HandoffDispatchInput | null;
-  onOpenInAgentMenuOpenChange?: (open: boolean) => void;
 }
 
-export function EditorHeader({
-  onSignIn,
-  onSetIdentity,
-  onOpenSearch,
-  openInAgentMenuOpen,
-  openInAgentMenuInput,
-  onOpenInAgentMenuOpenChange,
-}: EditorHeaderProps) {
+export function EditorHeader({ onSignIn, onSetIdentity, onOpenSearch }: EditorHeaderProps) {
   const { t } = useLingui();
   const { activeDocName, activeTarget } = useDocumentContext();
   const { state: sidebarState, isDraggingRail } = useSidebar();
   const singleFile = useSingleFileMode();
   const sidebarShortcut = formatShortcut('toggle-files-sidebar');
   const searchShortcut = formatShortcut('command-palette');
-  const workspace = useWorkspace();
   const [publishOpen, setPublishOpen] = useState(false);
-  const handoffInput: HandoffDispatchInput | null = (() => {
-    if (activeTarget === null) {
-      return buildProjectScopedHandoffInput({ workspace });
-    }
-    if (activeTarget.kind === 'folder') {
-      if (!workspace) return null;
-      return buildFolderHandoffInput({
-        folderRelativePath: activeTarget.folderPath,
-        workspace,
-      });
-    }
-    return buildHandoffInput({ docName: activeDocName, workspace });
-  })();
-  const menuHandoffInput = openInAgentMenuInput ?? handoffInput;
-
   const shareInput: ShareTargetInput | null = (() => {
     if (activeTarget?.kind === 'folder') {
       return buildFolderShareInput(activeTarget.folderPath);
@@ -166,18 +132,12 @@ export function EditorHeader({
           isElectronHost && '[&>*]:[-webkit-app-region:no-drag]',
         )}
       >
-        {/* Agent handoff + share are project surfaces: single-file `ok <file>`
-            runs agents/MCP off and on a throwaway server, so "open with AI" is
-            inert and a share link would point at a session that's gone on close.
-            Hidden here (mirrors the sidebar/Settings gates) rather than rendered
-            disabled. */}
+        {/* Share is a project surface: single-file `ok <file>` runs agents/MCP
+            off and on a throwaway server, so a share link would point at a
+            session that's gone on close. Hidden here (mirrors the
+            sidebar/Settings gates) rather than rendered disabled. */}
         {!singleFile && (
           <>
-            <OpenInAgentMenu
-              input={menuHandoffInput}
-              open={openInAgentMenuOpen}
-              onOpenChange={onOpenInAgentMenuOpenChange}
-            />
             <ShareButton input={shareInput} onClickWhenNoRemote={() => setPublishOpen(true)} />
             <PublishToGitHubDialog open={publishOpen} onOpenChange={setPublishOpen} />
           </>

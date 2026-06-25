@@ -802,6 +802,43 @@
   grid-column: content;
 }
 
+/* The floating Ask AI composer reserves scroll room at the bottom of the doc by
+   padding the editor CONTENT (.ProseMirror / .cm-content) — padding the scroll
+   container alone creates no overflow because the content's own min-height fills
+   it. The inset tracks the live composer via `--ask-composer-height` (card height
+   + gap, published by BottomComposer); the var is the single source of truth and
+   is absent when the composer is collapsed or hidden, so the padding collapses to
+   0 and the space is reclaimed — no class to fall out of sync. Scoped inside
+   `.editor-doc-scroll` so the floating composer's own ProseMirror (a sibling of
+   the scroll container) is never padded. */
+.editor-doc-scroll {
+  scroll-padding-bottom: var(--ask-composer-height, 0px);
+}
+.editor-doc-scroll :is(.ProseMirror, .cm-content) {
+  padding-bottom: var(--ask-composer-height, 0px);
+}
+
+/* Ease the inset + composer entrance so collapsing/expanding glides instead of a
+   hard jump cut. The per-frame scroll re-clamp in BottomComposer keeps the bottom
+   pinned while the padding transition plays. Reduced-motion users get the instant
+   change. */
+@media (prefers-reduced-motion: no-preference) {
+  .editor-doc-scroll :is(.ProseMirror, .cm-content) {
+    transition: padding-bottom 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  [data-testid="bottom-composer"] {
+    transition:
+      opacity 200ms ease,
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @starting-style {
+    [data-testid="bottom-composer"] {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
 /* Content-column children. The `.tiptap-editor` wrapper is a 3-column named
  * grid ([full-start] margin [content-start] content [content-end] margin
  * [full-end]). Direct children default to `grid-column: content` so editor
@@ -864,6 +901,133 @@
 
 .ProseMirror p {
   margin-bottom: 0.5em;
+}
+
+/* The bottom "Ask AI" composer reuses a ProseMirror view but is a slim prompt
+   field, not a document body: drop the 200px min-height and the drag-handle
+   left margin/padding so it rests at one line and its text origin aligns with
+   the placeholder overlay. Higher specificity (.ProseMirror.composer-prosemirror)
+   beats the unlayered base rule above; a Tailwind `min-h-0` utility would not. */
+.ProseMirror.composer-prosemirror {
+  min-height: 0;
+  line-height: 1.5;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.ProseMirror.composer-prosemirror p {
+  margin-bottom: 0;
+}
+
+/* Inline `@`-mention chip in the composer — VISUALLY INDISTINGUISHABLE from the
+   host-level ComposerContextChips top-row chip (`FileChip`): a user can't tell an
+   inline chip from a top-row chip by looking, only by where it sits. Each rule
+   below maps token-for-token to a Tailwind class on the top-row chip so the two
+   stay in lockstep. The top-row container is:
+     inline-flex max-w-[14rem] items-center gap-1 rounded-md border bg-muted/40
+     py-0.5 pr-1.5 pl-1 text-muted-foreground text-xs
+   and its leading icon-button is `size-3.5 rounded-sm` holding a `size-3` glyph
+   that cross-fades file-icon → X.
+
+   Like the top-row chip, the LEADING icon doubles as the remove control (Cursor
+   pattern): NO trailing × and no reserved trailing slot — at rest the chip is
+   fully tight (leading `@` marker + label). The reveal is LAYOUT-NEUTRAL: the
+   leading cell is fixed-size and holds two stacked glyphs (`@` and `×`); on
+   hover/`:focus-within` they cross-fade via `opacity` ONLY (the `@` fades to 0,
+   the `×` fades to 1) in the same cell, so the chip's box is identical hovered vs
+   not and the inline prompt text never reflows (a width/margin-changing reveal
+   here flickered: reflow shifted the chip out from under the cursor, toggling
+   :hover off → shrink → reflow back → infinite). Single-line ONLY: `inline-flex`
+   + bounded `max-width` + the label ellipsizes, so a long label truncates with
+   `…` instead of wrapping. `vertical-align: middle` (inline-context-only — the
+   top-row chip is a standalone flex row and doesn't need it) keeps the pill
+   aligned with the surrounding prompt text. */
+.composer-mention-chip {
+  display: inline-flex; /* inline-flex */
+  align-items: center; /* items-center */
+  gap: 0.25rem; /* gap-1 */
+  max-width: 14rem; /* max-w-[14rem] */
+  border-radius: var(--radius-md); /* rounded-md */
+  border: 1px solid var(--border); /* border */
+  background-color: color-mix(in oklab, var(--muted) 40%, transparent); /* bg-muted/40 */
+  padding: 0.125rem 0.375rem 0.125rem 0.25rem; /* py-0.5 pr-1.5 pl-1 */
+  font-size: var(--text-xs); /* text-xs */
+  line-height: 1rem; /* text-xs line-height — matches the top-row chip's pill height */
+  color: var(--muted-foreground); /* text-muted-foreground */
+  vertical-align: middle;
+  white-space: nowrap;
+  user-select: none;
+}
+/* The leading icon-button — the top-row chip's `size-3.5 rounded-sm` ghost
+   icon-button: a fixed-size cell that overlays its two glyphs (so the cell never
+   resizes during the cross-fade). It IS the remove control — focusable real
+   `<button>` (Enter/Space activate natively), clickable cursor, accessible name
+   set in the node view. The `text-muted-foreground/80 → hover:text-foreground`
+   mirrors the top-row icon-button's color treatment. */
+.composer-mention-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 0.875rem; /* size-3.5 */
+  height: 0.875rem; /* size-3.5 */
+  border-radius: var(--radius-sm); /* rounded-sm */
+  line-height: 1;
+  color: color-mix(in oklab, var(--muted-foreground) 80%, transparent);
+  cursor: pointer;
+}
+.composer-mention-icon:hover {
+  color: var(--foreground);
+}
+.composer-mention-icon:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+/* Both glyphs share the SAME `size-3`-equivalent cell (stacked + centered). Only
+   `opacity` toggles — never layout — so the swap is reflow-free. Each glyph holds
+   an inline lucide `<svg>` (injected by the node view), sized to the top-row
+   chip's `size-3` (0.75rem) footprint and inheriting `currentColor` so the cell's
+   `color` (muted-foreground → foreground on hover) drives the glyph — identical
+   to the React-rendered top-row icon. The base rule is the static reduced-motion
+   state (instant swap, no transition); the transition is added only under
+   `prefers-reduced-motion: no-preference` below. */
+.composer-mention-glyph {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.composer-mention-glyph svg {
+  width: 0.75rem; /* size-3 — matches the top-row leading icon */
+  height: 0.75rem;
+}
+.composer-mention-glyph-icon {
+  opacity: 1;
+}
+.composer-mention-glyph-x {
+  opacity: 0;
+}
+.composer-mention-chip:hover .composer-mention-glyph-icon,
+.composer-mention-chip:focus-within .composer-mention-glyph-icon {
+  opacity: 0;
+}
+.composer-mention-chip:hover .composer-mention-glyph-x,
+.composer-mention-chip:focus-within .composer-mention-glyph-x {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .composer-mention-glyph {
+    transition: opacity 140ms ease;
+  }
+}
+.composer-mention-label {
+  min-width: 0; /* min-w-0 */
+  overflow: hidden; /* truncate */
+  white-space: nowrap; /* truncate */
+  text-overflow: ellipsis; /* truncate */
 }
 
 .ProseMirror [data-mark-view-content] {

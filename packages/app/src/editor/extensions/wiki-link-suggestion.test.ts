@@ -1,9 +1,10 @@
-import { describe, expect, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import type { HeadingEntry } from '@inkeep/open-knowledge-core';
 import {
   buildAnchorItems,
   buildSuggestionItems,
   computeFallbackAttrs,
+  fetchPages,
   type PageItem,
   parseQuery,
   wikiLinkMatcher,
@@ -288,5 +289,83 @@ describe('wikiLinkMatcher', () => {
 
   test('returns null when ] appears after [[ (closed bracket)', () => {
     expect(wikiLinkMatcher(stubPosition('[[done]', 1) as never)).toBeNull();
+  });
+});
+
+describe('fetchPages', () => {
+  const realFetch = globalThis.fetch;
+
+  function pageEntry(docName: string, title: string) {
+    return { docName, title, docExt: '.md', size: 1, modified: '2026-06-24T00:00:00.000Z' };
+  }
+
+  function stubFetch(pagesBody: unknown, documentsBody: unknown) {
+    globalThis.fetch = mock(async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      const body = url.startsWith('/api/pages') ? pagesBody : documentsBody;
+      return new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as typeof globalThis.fetch;
+  }
+
+  beforeEach(() => {
+    stubFetch({ pages: [] }, { documents: [] });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  test('a folder row survives and maps to a kind:"folder" PageItem', async () => {
+    stubFetch(
+      { pages: [pageEntry('notes', 'Notes')] },
+      {
+        documents: [
+          { kind: 'folder', path: 'specs/foo', size: 0, modified: '2026-06-24T00:00:00.000Z' },
+        ],
+      },
+    );
+
+    const result = await fetchPages();
+    const folder = result.find((item) => item.kind === 'folder');
+    expect(folder).toEqual({ kind: 'folder', docName: 'specs/foo', title: 'foo' });
+  });
+
+  test('a top-level folder titles from its bare path', async () => {
+    stubFetch(
+      { pages: [] },
+      { documents: [{ kind: 'folder', path: 'specs', modified: '2026-06-24T00:00:00.000Z' }] },
+    );
+
+    const result = await fetchPages();
+    expect(result).toContainEqual({ kind: 'folder', docName: 'specs', title: 'specs' });
+  });
+
+  test('keeps pages, assets, and folders together; drops other kinds', async () => {
+    stubFetch(
+      { pages: [pageEntry('notes', 'Notes')] },
+      {
+        documents: [
+          { kind: 'folder', path: 'guides', modified: '2026-06-24T00:00:00.000Z' },
+          { kind: 'asset', path: 'img/diagram.png' },
+          { kind: 'file', path: 'ignored.md' },
+        ],
+      },
+    );
+
+    const result = await fetchPages();
+    expect(result.map((item) => item.kind)).toEqual(['page', 'asset', 'folder']);
+  });
+
+  test('folders with an empty path are dropped', async () => {
+    stubFetch(
+      { pages: [] },
+      { documents: [{ kind: 'folder', path: '', modified: '2026-06-24T00:00:00.000Z' }] },
+    );
+
+    const result = await fetchPages();
+    expect(result.some((item) => item.kind === 'folder')).toBe(false);
   });
 });

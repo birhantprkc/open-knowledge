@@ -9,7 +9,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
 import { yCollab } from 'y-codemirror.next';
 import type * as Y from 'yjs';
-import { useOpenInAgentMenuRequest } from '@/components/handoff/OpenInAgentMenuRequestContext';
+import { emitOpenAskAiComposer } from '@/components/ask-ai-composer-events';
 import { OUTLINE_NAV_EVENT, type OutlineNavDetail } from '@/components/OutlinePanel';
 import {
   createNestedCMExtensions,
@@ -23,6 +23,7 @@ import { createSourceClipboardExtension } from './clipboard/index.ts';
 import { type CmCacheEntry, mountCmEditor, parkCmEditor } from './editor-cache';
 import { getMountId } from './mount-id-registry';
 import { markUserTyping } from './observers';
+import { publishSelectionContext, selectionSnapshotFromSource } from './selection-context';
 import {
   publishSelectionStats,
   SELECTION_STATS_DEBOUNCE_MS,
@@ -89,12 +90,6 @@ function applyRawMdxNavigation(view: EditorView, detail: RawMdxNavDetail): void 
   });
 }
 
-function serializeSourceSelection(view: EditorView): string {
-  const range = view.state.selection.main;
-  if (range.empty) return '';
-  return view.state.sliceDoc(range.from, range.to);
-}
-
 export function SourceEditor({
   docName,
   ytext,
@@ -108,14 +103,8 @@ export function SourceEditor({
   if (mountError) throw mountError;
   const { resolvedTheme } = useTheme();
   const { merged } = useConfigContext();
-  const { openSelection } = useOpenInAgentMenuRequest();
-  const openSelectionRef = useRef(openSelection);
   const sourceModeActiveRef = useRef(isSourceModeActive);
   const wordWrap = merged?.editor?.wordWrap ?? true;
-
-  useEffect(() => {
-    openSelectionRef.current = openSelection;
-  }, [openSelection]);
 
   useEffect(() => {
     sourceModeActiveRef.current = isSourceModeActive;
@@ -173,21 +162,22 @@ export function SourceEditor({
                     'source',
                     selectionStatsFromSource(update.view),
                   );
+                  publishSelectionContext(
+                    resolvedDocName,
+                    'source',
+                    selectionSnapshotFromSource(update.view, resolvedDocName),
+                  );
                 }, SELECTION_STATS_DEBOUNCE_MS);
               }),
               EditorView.domEventHandlers({
-                keydown: (event, view) => {
+                keydown: (event, _view) => {
                   if (!sourceModeActiveRef.current) return false;
                   if (!isMacOS()) return false;
                   if (!matchesKeyboardShortcut(event, 'edit-with-ai')) return false;
                   event.preventDefault();
                   event.stopPropagation();
                   event.stopImmediatePropagation();
-                  openSelectionRef.current({
-                    docName: resolvedDocName,
-                    instruction: '',
-                    selectionMarkdown: serializeSourceSelection(view),
-                  });
+                  emitOpenAskAiComposer();
                   return true;
                 },
               }),
@@ -202,6 +192,11 @@ export function SourceEditor({
           });
           const view = new EditorView({ state, parent: el });
           publishSelectionStats(resolvedDocName, 'source', selectionStatsFromSource(view));
+          publishSelectionContext(
+            resolvedDocName,
+            'source',
+            selectionSnapshotFromSource(view, resolvedDocName),
+          );
           const dom = view.contentDOM;
           dom.addEventListener('keydown', mark);
           dom.addEventListener('paste', mark);

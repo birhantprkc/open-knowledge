@@ -47,6 +47,7 @@ import { uploadDecorationPlugin } from './image-upload/index.ts';
 import { getMountId } from './mount-id-registry';
 import { mountTiptapEditorPromise } from './mount-promise';
 import { markUserTyping } from './observers';
+import { publishSelectionContext, selectionSnapshotFromWysiwyg } from './selection-context';
 import {
   publishSelectionStats,
   SELECTION_STATS_DEBOUNCE_MS,
@@ -452,6 +453,7 @@ const TiptapEditorChrome: FC<TiptapEditorChromeProps> = ({
     const publish = () => {
       timer = null;
       publishSelectionStats(docName, 'wysiwyg', selectionStatsFromWysiwyg(editor));
+      publishSelectionContext(docName, 'wysiwyg', selectionSnapshotFromWysiwyg(editor, docName));
     };
     const schedule = () => {
       if (timer) clearTimeout(timer);
@@ -465,6 +467,7 @@ const TiptapEditorChrome: FC<TiptapEditorChromeProps> = ({
       editor.off('selectionUpdate', schedule);
       editor.off('update', schedule);
       publishSelectionStats(docName, 'wysiwyg', null);
+      publishSelectionContext(docName, 'wysiwyg', null);
     };
   }, [editor, provider]);
 

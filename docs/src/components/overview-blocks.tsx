@@ -17,9 +17,9 @@ const LAYERS: Layer[] = [
     role: 'What you touch',
     desc: (
       <>
-        A beautiful macOS editor for your <code>.md</code> files: WYSIWYG or source mode, backlinks,
-        the <code>[[Page]]</code> wiki-link syntax, frontmatter, asset embeds, and version history,
-        with a live preview as agents work.
+        A beautiful editor for your <code>.md</code> files: WYSIWYG or source mode, backlinks, the{' '}
+        <code>[[Page]]</code> wiki-link syntax, frontmatter, asset embeds, and version history, with
+        a live preview as agents work.
       </>
     ),
   },

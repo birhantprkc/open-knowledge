@@ -1,12 +1,14 @@
 import type { HandoffTarget, InstallState } from '@inkeep/open-knowledge-core';
 import { VISIBLE_TARGETS } from '@/lib/handoff/targets';
+import {
+  loadStickyAgent,
+  type StickyAgentStorage,
+  saveStickyAgent,
+} from '@/lib/unified-agent-store';
 
 export const PREFERRED_AGENT_KEY = 'ok-preferred-agent-v1';
 
-export interface PreferredAgentStorage {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-}
+export type PreferredAgentStorage = StickyAgentStorage;
 
 const VISIBLE_IDS = new Set<string>(VISIBLE_TARGETS.map((target) => target.id));
 
@@ -16,19 +18,17 @@ function isVisibleTarget(value: unknown): value is HandoffTarget {
 
 export function readPreferredAgent(storage?: PreferredAgentStorage): HandoffTarget | null {
   try {
-    const raw = (storage ?? localStorage).getItem(PREFERRED_AGENT_KEY);
+    const raw = loadStickyAgent(storage);
     return isVisibleTarget(raw) ? raw : null;
   } catch {
     return null; // localStorage unavailable (private mode, disabled) — no memory.
   }
 }
 
-/** Persist the preference. Swallows quota / availability errors — the in-memory
- *  selection still holds for the session. */
+/** Persist the preference to the unified key. Swallows quota / availability
+ *  errors — the in-memory selection still holds for the session. */
 export function writePreferredAgent(id: HandoffTarget, storage?: PreferredAgentStorage): void {
-  try {
-    (storage ?? localStorage).setItem(PREFERRED_AGENT_KEY, id);
-  } catch {}
+  saveStickyAgent(id, storage);
 }
 
 export function resolvePreferredAgent(args: {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test';
 import type { CreateScenario, InstallState } from '@inkeep/open-knowledge-core';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, type Ref, useImperativeHandle, useRef } from 'react';
 import type { HandoffDispatchInput } from '@/components/handoff/useHandoffDispatch';
 import type { Workspace } from '@/lib/workspace-paths';
 
@@ -57,6 +57,62 @@ mock.module('@/components/ui/dropdown-menu', () => ({
   DropdownMenuSeparator: () => <hr data-testid="menu-separator" />,
 }));
 
+let mockMentions: string[] = [];
+type MentionHandle = {
+  focus: () => void;
+  blur: () => void;
+  clear: () => void;
+  setText: (text: string) => void;
+  getContent: () => { instruction: string; mentions: string[] };
+};
+mock.module('@/editor/ComposerMentionInput', () => ({
+  ComposerMentionInput: ({
+    ref,
+    ariaLabel,
+    placeholder,
+    onEmptyChange,
+    onSubmit,
+    className,
+  }: {
+    ref?: Ref<MentionHandle>;
+    ariaLabel: string;
+    placeholder?: string;
+    onEmptyChange: (isEmpty: boolean) => void;
+    onSubmit: () => void;
+    className?: string;
+  }) => {
+    const localRef = useRef<HTMLTextAreaElement>(null);
+    useImperativeHandle(ref, () => ({
+      focus: () => localRef.current?.focus(),
+      blur: () => localRef.current?.blur(),
+      clear: () => {
+        if (localRef.current) localRef.current.value = '';
+        onEmptyChange(true);
+      },
+      setText: (text: string) => {
+        if (localRef.current) localRef.current.value = text;
+        onEmptyChange(text.trim() === '');
+      },
+      getContent: () => ({ instruction: localRef.current?.value ?? '', mentions: mockMentions }),
+    }));
+    return (
+      <textarea
+        ref={localRef}
+        aria-label={ariaLabel}
+        placeholder={placeholder}
+        className={className}
+        onChange={(event) => onEmptyChange(event.target.value.trim() === '')}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            onSubmit();
+          }
+        }}
+      />
+    );
+  },
+}));
+
 const installedAll: Record<string, InstallState> = {
   'claude-code': { installed: true },
   codex: { installed: true },
@@ -90,6 +146,7 @@ describe('CreatePromptComposer Desktop / Terminal sections', () => {
     launchCalls.length = 0;
     states = {};
     workspaceValue = null;
+    mockMentions = [];
   });
 
   test('renders Desktop and Terminal sections with the CLI launch row when a launcher is present', async () => {
@@ -137,6 +194,7 @@ describe('CreatePromptComposer Desktop / Terminal sections', () => {
         docContext: null,
         createDescription: 'Build a competitor wiki',
         createScenario: 'new-project',
+        createMentions: [],
         projectDir: '/tmp/project',
         docPath: '',
       },
@@ -148,6 +206,9 @@ describe('CreatePromptComposer Desktop / Terminal sections', () => {
     workspaceValue = null; // buildCreateHandoffInput returns null until the workspace resolves.
     await renderComposer({ withTerminal: true });
 
+    fireEvent.change(screen.getByLabelText('Describe the project you want to create'), {
+      target: { value: 'Build a wiki' },
+    });
     fireEvent.click(screen.getByTestId('create-with-cli-claude'));
     await waitFor(() => {
       expect(screen.getByTestId('create-with-agent').textContent).toContain(
@@ -181,13 +242,13 @@ describe('CreatePromptComposer Desktop / Terminal sections', () => {
     expect(row.getAttribute('aria-label')).toBe('Claude CLI');
   });
 
-  test('Cmd+Enter in CLI mode launches the terminal with the typed brief', async () => {
+  test('Enter in CLI mode launches the terminal with the typed brief', async () => {
     states = { ...installedAll };
     workspaceValue = { contentDir: '/tmp/project', pathSeparator: '/' };
     await renderComposer({ withTerminal: true, scenario: 'new-project' });
 
-    const textarea = screen.getByLabelText('Describe the project you want to create');
-    fireEvent.change(textarea, { target: { value: 'Build a wiki' } });
+    const field = screen.getByLabelText('Describe the project you want to create');
+    fireEvent.change(field, { target: { value: 'Build a wiki' } });
     fireEvent.click(screen.getByTestId('create-with-cli-claude')); // enter CLI mode
     await waitFor(() => {
       expect(screen.getByTestId('create-with-agent').textContent).toContain(
@@ -195,12 +256,13 @@ describe('CreatePromptComposer Desktop / Terminal sections', () => {
       );
     });
 
-    fireEvent.keyDown(textarea, { key: 'Enter', metaKey: true });
+    fireEvent.keyDown(field, { key: 'Enter' });
     expect(launchCalls).toEqual([
       {
         docContext: null,
         createDescription: 'Build a wiki',
         createScenario: 'new-project',
+        createMentions: [],
         projectDir: '/tmp/project',
         docPath: '',
       },
@@ -224,5 +286,117 @@ describe('CreatePromptComposer Desktop / Terminal sections', () => {
       expect(screen.getByTestId('create-with-agent').textContent).toContain('Create with Codex');
     });
     expect(launchCalls).toEqual([]);
+  });
+
+  test('renders the @-mention input in place of the plain textarea', async () => {
+    states = { ...installedAll };
+    workspaceValue = { contentDir: '/tmp/project', pathSeparator: '/' };
+    await renderComposer({ withTerminal: true });
+    expect(screen.getByLabelText('Describe the project you want to create')).toBeTruthy();
+  });
+
+  test('threads the inserted @-mentions through the create handoff input', async () => {
+    states = { ...installedAll };
+    workspaceValue = { contentDir: '/tmp/project', pathSeparator: '/' };
+    mockMentions = ['notes/structure.md', 'glossary.md'];
+    await renderComposer({ withTerminal: true, scenario: 'existing-repo' });
+
+    const field = screen.getByLabelText('Describe the project you want to create');
+    fireEvent.change(field, { target: { value: 'draft a spec' } });
+    fireEvent.click(screen.getByTestId('create-with-cli-claude')); // CLI mode
+    await waitFor(() => {
+      expect(screen.getByTestId('create-with-agent').textContent).toContain(
+        'Create with Claude CLI',
+      );
+    });
+    fireEvent.keyDown(field, { key: 'Enter' });
+
+    expect(launchCalls).toEqual([
+      {
+        docContext: null,
+        createDescription: 'draft a spec',
+        createScenario: 'existing-repo',
+        createMentions: ['notes/structure.md', 'glossary.md'],
+        projectDir: '/tmp/project',
+        docPath: '',
+      },
+    ]);
+  });
+
+  test('empty brief: no error by default; an empty create attempt surfaces the validation error and does not launch; valid input clears it', async () => {
+    states = { ...installedAll };
+    workspaceValue = { contentDir: '/tmp/project', pathSeparator: '/' };
+    await renderComposer({ withTerminal: true });
+
+    expect(screen.queryByTestId('create-input-required')).toBeNull();
+
+    fireEvent.click(screen.getByTestId('create-with-cli-claude')); // CLI mode
+    await waitFor(() => {
+      expect(screen.getByTestId('create-with-agent').textContent).toContain(
+        'Create with Claude CLI',
+      );
+    });
+
+    fireEvent.keyDown(screen.getByLabelText('Describe the project you want to create'), {
+      key: 'Enter',
+    });
+    expect(launchCalls).toEqual([]);
+    const enterError = screen.getByTestId('create-input-required');
+    expect(enterError.textContent).toBe('Describe what you want to create to continue');
+    expect(enterError.getAttribute('role')).toBe('alert');
+    expect(enterError.className).toContain('text-destructive');
+
+    fireEvent.click(screen.getByTestId('create-with-agent'));
+    expect(launchCalls).toEqual([]);
+    expect(screen.getByTestId('create-input-required').textContent).toBe(
+      'Describe what you want to create to continue',
+    );
+
+    fireEvent.change(screen.getByLabelText('Describe the project you want to create'), {
+      target: { value: 'Build a wiki' },
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId('create-input-required')).toBeNull();
+    });
+
+    fireEvent.keyDown(screen.getByLabelText('Describe the project you want to create'), {
+      key: 'Enter',
+    });
+    expect(launchCalls).toEqual([
+      {
+        docContext: null,
+        createDescription: 'Build a wiki',
+        createScenario: 'new-project',
+        createMentions: [],
+        projectDir: '/tmp/project',
+        docPath: '',
+      },
+    ]);
+  });
+
+  test('a starter suggestion prefills the field (setText) and Create carries it', async () => {
+    states = { ...installedAll };
+    workspaceValue = { contentDir: '/tmp/project', pathSeparator: '/' };
+    await renderComposer({ withTerminal: true, scenario: 'new-project' });
+
+    const field = screen.getByLabelText(
+      'Describe the project you want to create',
+    ) as HTMLTextAreaElement;
+    expect(field.value).toBe('');
+
+    const chip = document.querySelector<HTMLButtonElement>('[data-testid^="create-suggestion-"]');
+    expect(chip).not.toBeNull();
+    fireEvent.click(chip as HTMLButtonElement);
+    expect(field.value.length).toBeGreaterThan(0);
+    const prefilled = field.value;
+
+    fireEvent.click(screen.getByTestId('create-with-cli-claude')); // CLI mode
+    await waitFor(() => {
+      expect(screen.getByTestId('create-with-agent').textContent).toContain(
+        'Create with Claude CLI',
+      );
+    });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(launchCalls[0]?.createDescription).toBe(prefilled);
   });
 });

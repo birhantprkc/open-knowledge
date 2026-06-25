@@ -167,6 +167,20 @@ const KEYBOARD_SHORTCUT_DEFINITIONS = [
     ],
   },
   {
+    id: 'open-ask-ai',
+    category: 'general',
+    title: msg`Ask AI`,
+    description: msg`Open and focus the bottom Ask AI prompt composer.`,
+    scope: msg`OK Desktop`,
+    bindings: [
+      {
+        mac: '⌘ L',
+        windowsLinux: 'Ctrl L',
+        match: { key: 'l', mod: true },
+      },
+    ],
+  },
+  {
     id: 'open-folder',
     category: 'workspace',
     title: msg`Open folder`,
@@ -314,8 +328,8 @@ const KEYBOARD_SHORTCUT_DEFINITIONS = [
   {
     id: 'edit-with-ai',
     category: 'general',
-    title: msg`Edit with AI`,
-    description: msg`Open the Open with AI menu for the current editor selection.`,
+    title: msg`Ask AI (from selection)`,
+    description: msg`Open and focus the Ask AI composer for the current editor selection.`,
     scope: msg`Editor selection`,
     bindings: [
       {

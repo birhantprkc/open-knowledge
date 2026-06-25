@@ -3,6 +3,11 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ArrowUpRight, Check, ChevronDown, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {
+  clearComposerDraft,
+  getComposerDraft,
+  setComposerDraftDoc,
+} from '@/components/composer-draft-store';
+import {
   type CreateScenario,
   useCreateSuggestions,
 } from '@/components/empty-state/use-create-suggestions';
@@ -27,8 +32,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Textarea } from '@/components/ui/textarea';
+import {
+  ComposerMentionInput,
+  type ComposerMentionInputHandle,
+} from '@/editor/ComposerMentionInput';
 import { VISIBLE_TARGETS } from '@/lib/handoff/targets';
+import { hasValidPromptInput } from '@/lib/has-valid-prompt-input';
 import {
   readPreferredAgent,
   resolvePreferredAgent,
@@ -49,7 +58,6 @@ export function CreatePromptComposer({ scenario, className }: CreatePromptCompos
   const workspace = useWorkspace();
   const terminalLaunch = useTerminalLaunch();
 
-  const [description, setDescription] = useState('');
   const [selectedAgentId, setSelectedAgentId] = useState<HandoffTarget | null>(() =>
     readPreferredAgent(),
   );
@@ -57,7 +65,18 @@ export function CreatePromptComposer({ scenario, className }: CreatePromptCompos
   const [selectedCli, setSelectedCli] = useState<TerminalCli | null>(null);
   const cliSelected = selectedCli !== null && terminalLaunch !== null;
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<ComposerMentionInputHandle>(null);
+
+  const [initialDraftDoc] = useState(() => getComposerDraft().doc ?? undefined);
+
+  const [isEmpty, setIsEmpty] = useState(true);
+
+  const [showRequiredError, setShowRequiredError] = useState(false);
+
+  function handleEmptyChange(nextEmpty: boolean) {
+    setIsEmpty(nextEmpty);
+    if (!nextEmpty) setShowRequiredError(false);
+  }
 
   const suggestions = useCreateSuggestions(scenario);
 
@@ -87,33 +106,59 @@ export function CreatePromptComposer({ scenario, className }: CreatePromptCompos
 
   function launchCli() {
     if (terminalLaunch === null || selectedCli === null) return;
-    const input = buildCreateHandoffInput({ workspace, description: description.trim(), scenario });
+    const { instruction, mentions } = inputRef.current?.getContent() ?? {
+      instruction: '',
+      mentions: [],
+    };
+    if (!hasValidPromptInput(instruction, mentions, false)) {
+      setShowRequiredError(true);
+      return;
+    }
+    const input = buildCreateHandoffInput({
+      workspace,
+      description: instruction,
+      scenario,
+      mentions,
+    });
     if (input === null) return; // Workspace not resolved yet — disabled-trigger contract.
     terminalLaunch.launchInTerminal(input, selectedCli);
+    inputRef.current?.clear();
+    clearComposerDraft();
   }
 
   function handleCreate(targetId: HandoffTarget) {
-    const desc = description.trim();
+    const { instruction, mentions } = inputRef.current?.getContent() ?? {
+      instruction: '',
+      mentions: [],
+    };
+    if (!hasValidPromptInput(instruction, mentions, false)) {
+      setShowRequiredError(true);
+      return;
+    }
     writePreferredAgent(targetId);
-    const input = buildCreateHandoffInput({ workspace, description: desc, scenario });
+    const input = buildCreateHandoffInput({
+      workspace,
+      description: instruction,
+      scenario,
+      mentions,
+    });
     if (input === null) return; // Workspace not resolved yet — disabled-trigger contract.
     void dispatch(targetId, input);
+    inputRef.current?.clear();
+    clearComposerDraft();
   }
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-      event.preventDefault();
-      if (cliSelected) {
-        launchCli();
-      } else if (selectedAgentId !== null) {
-        handleCreate(selectedAgentId);
-      }
+  function handleSubmit() {
+    if (cliSelected) {
+      launchCli();
+    } else if (selectedAgentId !== null) {
+      handleCreate(selectedAgentId);
     }
   }
 
   function applySuggestion(prompt: string) {
-    setDescription(prompt);
-    textareaRef.current?.focus();
+    inputRef.current?.setText(prompt);
+    inputRef.current?.focus();
   }
 
   if (noAgentsInstalled) {
@@ -158,21 +203,37 @@ export function CreatePromptComposer({ scenario, className }: CreatePromptCompos
   return (
     <div className={cn('flex w-full flex-col gap-3', className)}>
       <div className="flex w-full flex-col rounded-2xl border border-border/60 bg-card shadow-sm transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
-        {/* The card owns the border + focus ring; the textarea drops its own
-            (border-0 + ring-0) so the whole card lights up on focus instead of
-            nesting a second outline. */}
-        <Textarea
-          ref={textareaRef}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={4}
+        {/* The card owns the border + focus ring; the mention input is bare (no
+            border/ring of its own) so the whole card lights up on focus instead
+            of nesting a second outline. The `@`-typeahead reuses the workspace
+            doc/file corpus to insert reference chips. */}
+        <ComposerMentionInput
+          ref={inputRef}
+          ariaLabel={t`Describe the project you want to create`}
           placeholder={t`A team knowledge base, a personal wiki, project docs...`}
-          aria-label={t`Describe the project you want to create`}
-          className="min-h-12 resize-none rounded-2xl border-0 bg-transparent dark:bg-transparent px-4 py-3.5 text-sm leading-relaxed shadow-none focus-visible:border-0 focus-visible:ring-0 max-h-96 subtle-scrollbar"
+          onEmptyChange={handleEmptyChange}
+          onContentChange={setComposerDraftDoc}
+          onSubmit={handleSubmit}
+          initialDoc={initialDraftDoc}
+          className="max-h-96 overflow-y-auto px-4 py-3 text-sm leading-relaxed subtle-scrollbar [&_.ProseMirror]:min-h-16"
         />
-        {/* Footer row: the Create split button, pinned right. */}
-        <div className="flex flex-wrap items-center justify-end gap-2 px-3 pb-3">
+        {/* Footer row: the input-required validation error (left) + the Create
+            split button (right). The error is hidden by default and only appears
+            once the user attempts to create with an empty brief — rendered in the
+            app's standard inline-validation style (role="alert" text-destructive,
+            matching NewItemDialog). It clears as soon as a valid brief is typed. */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 pb-3">
+          {showRequiredError && isEmpty ? (
+            <p
+              role="alert"
+              className="text-1sm text-destructive"
+              data-testid="create-input-required"
+            >
+              <Trans>Describe what you want to create to continue</Trans>
+            </p>
+          ) : (
+            <span />
+          )}
           {selectedAgentId === null ? (
             <Button
               type="button"

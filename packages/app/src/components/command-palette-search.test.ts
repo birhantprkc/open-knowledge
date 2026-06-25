@@ -42,7 +42,14 @@ describe('buildWorkspaceEntries', () => {
     );
 
     expect(entries).toEqual([
-      { kind: 'file', path: 'data/example.csv', name: 'example.csv', bodyIndexed: false },
+      {
+        kind: 'file',
+        path: 'data/example.csv',
+        name: 'example.csv',
+        bodyIndexed: false,
+        assetExt: 'csv',
+        mediaKind: null,
+      },
       { kind: 'folder', path: 'notes', name: 'notes' },
       { kind: 'file', path: 'notes/guide', name: 'guide' },
       {
@@ -50,6 +57,8 @@ describe('buildWorkspaceEntries', () => {
         path: 'packages/app/src/index.ts',
         name: 'index.ts',
         bodyIndexed: false,
+        assetExt: 'ts',
+        mediaKind: 'text',
       },
     ]);
   });
@@ -331,6 +340,8 @@ describe('fetchWorkspaceSearchEntries', () => {
         name: 'example.csv',
         title: 'data/example.csv',
         score: 7,
+        assetExt: 'csv',
+        mediaKind: null,
       },
     ]);
   });

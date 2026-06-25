@@ -6,7 +6,6 @@ import {
   expectVisualClassTokens,
   expectVisualClassTokensAbsent,
 } from '@/test-utils/visual-contract';
-import type { HandoffDispatchInput } from './handoff/useHandoffDispatch';
 
 mock.module('@lingui/react/macro', () => ({
   Trans: ({ children }: { children: ReactNode }) => <>{children}</>,
@@ -20,18 +19,9 @@ let activeDocName: string | null = 'docs/notes';
 let activeTarget: unknown = { kind: 'doc' };
 let sidebarState: 'expanded' | 'collapsed' = 'expanded';
 let isDraggingRail = false;
-let workspace: { contentDir: string; pathSeparator: string } | null = {
-  contentDir: '/tmp/project',
-  pathSeparator: '/',
-};
-let latestHandoffInput: HandoffDispatchInput | null | undefined;
 
 mock.module('@/editor/DocumentContext', () => ({
   useDocumentContext: () => ({ activeDocName, activeTarget }),
-}));
-
-mock.module('@/lib/use-workspace', () => ({
-  useWorkspace: () => workspace,
 }));
 
 mock.module('@/components/ui/sidebar', () => ({
@@ -45,13 +35,6 @@ mock.module('@/components/ui/sidebar', () => ({
 
 mock.module('./EditorTabs', () => ({
   EditorTabs: () => <div data-testid="editor-tabs" />,
-}));
-
-mock.module('./handoff/OpenInAgentMenu', () => ({
-  OpenInAgentMenu: ({ input }: { input: HandoffDispatchInput | null }) => {
-    latestHandoffInput = input;
-    return <div data-testid="open-in-agent-menu" data-has-input={String(input !== null)} />;
-  },
 }));
 
 mock.module('./ShareButton', () => ({
@@ -109,8 +92,6 @@ describe('EditorHeader runtime behavior', () => {
     activeTarget = { kind: 'doc' };
     sidebarState = 'expanded';
     isDraggingRail = false;
-    workspace = { contentDir: '/tmp/project', pathSeparator: '/' };
-    latestHandoffInput = undefined;
   });
 
   test('exports the EditorHeader component', async () => {
@@ -181,53 +162,8 @@ describe('EditorHeader runtime behavior', () => {
     await renderHeader();
 
     expect(screen.getByTestId('editor-tabs')).toBeTruthy();
-    expect(screen.getByTestId('open-in-agent-menu')).toBeTruthy();
+    expect(screen.queryByTestId('open-in-agent-menu')).toBeNull();
     expect(screen.queryByText('projectName')).toBeNull();
     expect(screen.queryByText('assetFileName')).toBeNull();
-  });
-
-  test('document target builds file-scope handoff input', async () => {
-    activeDocName = 'docs/notes';
-    activeTarget = { kind: 'doc' };
-    await renderHeader();
-
-    expect(latestHandoffInput?.docContext).toEqual({ relativePath: 'docs/notes.md' });
-    expect(latestHandoffInput?.docPath).toBe('/tmp/project/docs/notes.md');
-  });
-
-  test('folder target builds folder-scope handoff input', async () => {
-    activeDocName = null;
-    activeTarget = { kind: 'folder', folderPath: 'team' };
-    await renderHeader();
-
-    expect(latestHandoffInput).toMatchObject({
-      docContext: null,
-      folderRelativePath: 'team',
-      projectDir: '/tmp/project',
-      docPath: '',
-    });
-  });
-
-  test('null target builds project-scope handoff input so the menu still renders', async () => {
-    activeDocName = null;
-    activeTarget = null;
-    await renderHeader();
-
-    expect(screen.getByTestId('open-in-agent-menu')).toBeTruthy();
-    expect(latestHandoffInput).toMatchObject({
-      docContext: null,
-      projectDir: '/tmp/project',
-      docPath: '',
-    });
-  });
-
-  test('workspace-missing folder scope disables handoff without hiding the menu', async () => {
-    activeDocName = null;
-    activeTarget = { kind: 'folder', folderPath: 'team' };
-    workspace = null;
-    await renderHeader();
-
-    expect(screen.getByTestId('open-in-agent-menu').getAttribute('data-has-input')).toBe('false');
-    expect(latestHandoffInput).toBeNull();
   });
 });
