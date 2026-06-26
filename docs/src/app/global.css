@@ -308,7 +308,7 @@
 }
 .ok-prosemirror h2 {
   font-size: 1.25em;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 .ok-prosemirror h3 {
   font-size: 1.1em;
@@ -359,7 +359,7 @@
 }
 .ok-prosemirror hr {
   border: none;
-  border-top: 1px solid var(--slide-border);
+  border-top: 1px solid var(--border);
   margin: 1em 0;
 }
 .ok-prosemirror .ok-wikilink {
@@ -418,7 +418,7 @@
 }
 .ok-prosemirror th,
 .ok-prosemirror td {
-  border: 1px solid var(--slide-border);
+  border: 1px solid var(--border);
   padding: 0.4em 0.6em;
   text-align: left;
 }

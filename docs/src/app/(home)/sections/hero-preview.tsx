@@ -1,11 +1,25 @@
 'use client';
 
 import { ArrowUp, Check, GitBranch, Globe, Loader2 } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ClaudeIcon } from '@/components/icons/claude';
 import { CodexBrandIcon } from '@/components/icons/codex';
 import { CursorIcon } from '@/components/icons/cursor';
+import {
+  OkEditorBody,
+  OkEditorModeToggle,
+  OkEditorProvider,
+  parseEditorMarkdown,
+  useEditorDocStats,
+  useOkEditor,
+} from '@/components/ok-editor/ok-editor';
+import {
+  HERO_FRONTMATTER,
+  HERO_FRONTMATTER_YAML,
+  heroRevealMarkdown,
+} from '@/components/ok-editor/seed';
 import { OkIcon } from '@/components/ok-icon';
+import { OkWordmark } from '@/components/ok-wordmark';
 import { useIsInView } from '@/lib/use-is-in-view';
 import { usePrefersReducedMotion } from '@/lib/use-prefers-reduced-motion';
 import { cn } from '@/lib/utils';
@@ -21,6 +35,8 @@ const AGENT_META = {
 } as const;
 
 export type HeroPreviewAgentId = keyof typeof AGENT_META;
+
+const AGENT_IDS = Object.keys(AGENT_META) as HeroPreviewAgentId[];
 
 const PAUSED = false;
 
@@ -50,7 +66,14 @@ const SEGMENTS: ReadonlyArray<{ phase: Phase; ms: number }> = [
   { phase: 'hold', ms: 2200 },
   { phase: 'reset', ms: 500 },
 ];
-const CYCLE_MS = SEGMENTS.reduce((sum, s) => sum + s.ms, 0);
+const RUN_ONCE_MS = SEGMENTS.filter((s) => s.phase !== 'reset').reduce((sum, s) => sum + s.ms, 0);
+
+const FINAL_STATE: State = {
+  phase: 'hold',
+  userTypedLen: USER_MESSAGE.length,
+  agentTypedLen: AGENT_STATUS.length,
+  contentStep: 5,
+};
 
 const FILL_THRESHOLDS_MS = [0, 450, 900, 1350] as const;
 
@@ -134,29 +157,23 @@ function computeStateForSegment(phase: Phase, local: number, localProgress: numb
   }
 }
 
-export function HeroPreview({
-  agentId,
-  active = true,
-}: {
-  agentId: HeroPreviewAgentId;
-  active?: boolean;
-}) {
-  const { label, Icon, brandColor } = AGENT_META[agentId];
-  const [state, setState] = useState<State>({
-    phase: 'hold',
-    userTypedLen: USER_MESSAGE.length,
-    agentTypedLen: AGENT_STATUS.length,
-    contentStep: 5,
-  });
+export function HeroPreview({ activeAgentId }: { activeAgentId: HeroPreviewAgentId }) {
+  const activeAgent = AGENT_META[activeAgentId];
+  const [state, setState] = useState<State>(() => computeState(0));
+  const [animationDone, setAnimationDone] = useState(false);
 
   const [containerRef, inView] = useIsInView<HTMLDivElement>('100px');
   const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (PAUSED) return;
-    if (prefersReducedMotion) return;
+    if (animationDone) return;
+    if (prefersReducedMotion) {
+      setState(FINAL_STATE);
+      setAnimationDone(true);
+      return;
+    }
     if (!inView) return;
-    if (!active) return;
     let raf = 0;
     let lastPhase: Phase | null = null;
     let lastUserLen = -1;
@@ -164,7 +181,12 @@ export function HeroPreview({
     let lastStep = -1;
     const start = performance.now();
     const step = (now: number) => {
-      const elapsed = (now - start) % CYCLE_MS;
+      const elapsed = now - start;
+      if (elapsed >= RUN_ONCE_MS) {
+        setState(FINAL_STATE);
+        setAnimationDone(true);
+        return;
+      }
       const next = computeState(elapsed);
       if (
         next.phase !== lastPhase ||
@@ -182,7 +204,7 @@ export function HeroPreview({
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [inView, prefersReducedMotion, active]);
+  }, [inView, prefersReducedMotion, animationDone]);
 
   const mobileScene: 'chat' | 'editor' =
     state.phase === 'rest' ||
@@ -198,42 +220,53 @@ export function HeroPreview({
       className="flex h-full w-full bg-[#fdfdfc] font-(family-name:--font-inter)"
     >
       {/* Two layout modes:
-          - <md: slider — both panels sit side-by-side in a 200%-wide track that
-            translates between scenes.
-          - md+: side-by-side at a fixed natural size (1024×576), scaled via
-            `transform: scale(calc(100cqw / 1024px))` to fit the card. Container
-            queries (cqw) drive the scale, so the layout stays at its natural
-            readable proportions and just shrinks/grows proportionally. */}
-      <div className="relative h-full w-full overflow-hidden md:flex md:items-center md:justify-center md:[container-type:size] lg:block lg:[container-type:normal]">
+          - <lg: single-pane slider — both panels sit side-by-side in a 200%-wide
+            track that translates between scenes (one visible at a time, full size).
+          - lg+: both panels side-by-side, filling the card. */}
+      <div className="relative h-full w-full overflow-hidden">
         <div
           className={cn(
-            'flex h-full w-[200%] transition-transform duration-500 ease-out',
+            'flex h-full w-[200%]',
+            prefersReducedMotion ? '' : 'transition-transform duration-500 ease-out',
             mobileScene === 'editor' ? '-translate-x-1/2' : 'translate-x-0',
-            'md:h-[576px] md:w-[1024px] md:flex-none',
-            'md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:grid-rows-1',
-            'md:translate-x-0 md:transition-none',
-            'md:[transform-origin:center_center]',
-            'md:[transform:scale(min(1,calc(100cqw_/_1024px),calc(100cqh_/_576px)))]',
-            'lg:h-full lg:w-full lg:[transform:none]',
+            'lg:grid lg:h-full lg:w-full lg:flex-none lg:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] lg:grid-rows-1',
+            'lg:translate-x-0 lg:transition-none',
           )}
         >
-          <div className="flex h-full w-1/2 shrink-0 flex-col md:contents">
-            <ChatPanel
-              AgentIcon={Icon}
-              brandColor={brandColor}
-              agentLabel={label}
-              phase={state.phase}
-              userTypedLen={state.userTypedLen}
-              agentTypedLen={state.agentTypedLen}
-            />
+          {/* Chat cell — one chat panel per agent, stacked and cross-faded. All
+              share the single animation state; only the active agent's branding
+              is visible, so switching agents just cross-fades the chat. */}
+          <div className="relative h-full w-1/2 shrink-0 lg:w-auto">
+            {AGENT_IDS.map((id) => {
+              const meta = AGENT_META[id];
+              return (
+                <div
+                  key={id}
+                  aria-hidden={activeAgentId !== id}
+                  className={cn(
+                    'absolute inset-0 transition-opacity duration-500 ease-out',
+                    activeAgentId === id ? 'opacity-100' : 'pointer-events-none opacity-0',
+                  )}
+                >
+                  <ChatPanel
+                    AgentIcon={meta.Icon}
+                    brandColor={meta.brandColor}
+                    agentLabel={meta.label}
+                    phase={state.phase}
+                    userTypedLen={state.userTypedLen}
+                    agentTypedLen={state.agentTypedLen}
+                  />
+                </div>
+              );
+            })}
           </div>
-          <div className="flex h-full w-1/2 shrink-0 flex-col md:block md:w-auto md:p-2">
+          <div className="flex h-full w-1/2 shrink-0 flex-col lg:block lg:w-auto lg:p-2">
             <EditorPanel
-              phase={state.phase}
               contentStep={state.contentStep}
-              AgentIcon={Icon}
-              brandColor={brandColor}
-              agentLabel={label}
+              AgentIcon={activeAgent.Icon}
+              brandColor={activeAgent.brandColor}
+              agentLabel={activeAgent.label}
+              animationDone={animationDone}
             />
           </div>
         </div>
@@ -312,7 +345,7 @@ function ChatPanel({
   }, [phase]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col border-b border-border md:border-b-0">
+    <div className="flex h-full min-h-0 flex-col border-b border-border lg:border-b-0">
       {/* Chat sub-header — traffic lights + agent label, only on this side */}
       <div className="flex shrink-0 items-center gap-6 px-4 py-3">
         <TrafficLights />
@@ -335,7 +368,7 @@ function ChatPanel({
             <span>{userTyped}</span>
             {showUserCaret && (
               <span
-                className="ml-px inline-block h-[0.9em] w-[1.5px] translate-y-[1px] animate-pulse bg-slide-text/60 align-middle"
+                className="ml-px inline-block h-[0.9em] w-[1.5px] translate-y-[1px] motion-safe:animate-pulse bg-slide-text/60 align-middle"
                 aria-hidden="true"
               />
             )}
@@ -360,7 +393,7 @@ function ChatPanel({
             <span>{agentTyped}</span>
             {showAgentCaret && (
               <span
-                className="ml-px inline-block h-[0.9em] w-[1.5px] translate-y-[1px] animate-pulse bg-slide-text/60 align-middle"
+                className="ml-px inline-block h-[0.9em] w-[1.5px] translate-y-[1px] motion-safe:animate-pulse bg-slide-text/60 align-middle"
                 aria-hidden="true"
               />
             )}
@@ -461,209 +494,119 @@ function ToolCallCard({
  * --------------------------------------------------------------------------- */
 
 function EditorPanel({
-  phase,
   contentStep,
   AgentIcon,
   brandColor,
   agentLabel,
+  animationDone,
 }: {
-  phase: Phase;
   contentStep: number;
   AgentIcon: typeof ClaudeIcon;
   brandColor: string | undefined;
   agentLabel: string;
+  animationDone: boolean;
 }) {
-  const agentConnected =
-    phase === 'tool-appear' ||
-    phase === 'tool-filling' ||
-    phase === 'tool-done' ||
-    phase === 'hold';
-
-  const highlight: 'peak' | 'active' | 'none' =
-    phase === 'tool-done'
-      ? 'peak'
-      : phase === 'tool-appear' || phase === 'tool-filling'
-        ? 'active'
-        : 'none';
-
-  const showHeading = contentStep >= 1 && phase !== 'reset';
-  const showCheck1 = contentStep >= 2 && phase !== 'reset';
-  const showCheck2 = contentStep >= 3 && phase !== 'reset';
-  const showCheck3 = contentStep >= 4 && phase !== 'reset';
-  const showCallout = contentStep >= 5 && phase !== 'reset';
-
-  const isFilled =
-    phase === 'tool-done' || phase === 'hold' || (phase === 'reset' && contentStep === 5);
-  const wordCount = isFilled ? 76 : 44;
-  const charCount = isFilled ? 385 : 235;
-  const tokenCount = Math.ceil(charCount / 4);
-
-  const editorScrollRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (phase === 'reset') return;
-    const el = editorScrollRef.current;
-    if (!el) return;
-    const scroll = () => {
-      const top = phase === 'rest' || contentStep === 0 ? 0 : el.scrollHeight;
-      el.scrollTo({ top, behavior: 'smooth' });
-    };
-    scroll();
-    const t = window.setTimeout(scroll, 450);
-    return () => window.clearTimeout(t);
-  }, [phase, contentStep]);
-
   return (
-    <div className="flex h-full min-h-0 flex-col bg-slide-bg-elevated md:overflow-hidden md:rounded-lg md:shadow-[0_0px_48px_-16px_rgba(35,31,32,0.18)]">
-      {/* Editor sub-header — row 1: URL bar; row 2: mode toggle + presence avatar */}
-      <div className="relative flex shrink-0 flex-col gap-3 px-4 py-3 text-left">
-        <div className="flex items-center gap-2 rounded-md bg-slide-text/[0.04] px-3 py-1.5 text-[11.5px] text-slide-muted">
-          <Globe className="size-3.5 shrink-0" aria-hidden="true" />
-          <span className="truncate">https://openknowledge.ai/{DOC_PATH}</span>
-        </div>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <span className="flex items-center gap-1.5 truncate text-[11px] text-slide-muted">
-            <OkIcon className="size-[18px] shrink-0" aria-hidden="true" />
-            <span className="hidden sm:inline">OpenKnowledge</span>
-          </span>
-          <div className="justify-self-center">
-            <ModeTogglePreview />
+    <OkEditorProvider
+      initialMarkdown={heroRevealMarkdown(contentStep)}
+      frontmatter={HERO_FRONTMATTER_YAML}
+    >
+      <div className="flex h-full min-h-0 flex-col bg-slide-bg-elevated lg:overflow-hidden lg:rounded-lg lg:shadow-[0_0px_48px_-16px_rgba(35,31,32,0.18)]">
+        {/* Editor sub-header — row 1: URL bar; row 2: mode toggle + presence avatar */}
+        <div className="relative flex shrink-0 flex-col gap-3 px-4 py-3 text-left">
+          <div className="flex items-center gap-2 rounded-md bg-slide-text/[0.04] px-3 py-1.5 text-[11.5px] text-slide-muted">
+            <Globe className="size-3.5 shrink-0 opacity-50" aria-hidden="true" />
+            <span className="truncate">https://openknowledge.ai/{DOC_PATH}</span>
           </div>
-          <div
-            className="flex justify-self-end transition-opacity duration-300"
-            style={{ opacity: agentConnected ? 1 : 0 }}
-            aria-hidden={!agentConnected}
-          >
-            <div
-              className="flex size-6 items-center justify-center rounded-full"
-              style={{
-                backgroundColor: brandColor
-                  ? `color-mix(in srgb, ${brandColor} 18%, transparent)`
-                  : undefined,
-              }}
-              title={`${agentLabel} is editing`}
-            >
-              <AgentIcon className="size-3.5" aria-hidden="true" style={{ color: brandColor }} />
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <span className="flex items-center gap-1.5 truncate text-[11px] text-slide-muted">
+              {/* Icon-only on small screens; the full wordmark lockup on large. */}
+              <OkIcon className="size-[24px] shrink-0 lg:hidden" aria-hidden="true" />
+              <OkWordmark
+                aria-label="OpenKnowledge"
+                className="hidden h-[24px] w-auto shrink-0 lg:block"
+              />
+            </span>
+            <div className="justify-self-center">
+              {animationDone ? <OkEditorModeToggle /> : <ModeTogglePreview />}
+            </div>
+            <div className="flex justify-self-end">
+              <div
+                className="flex size-6 items-center justify-center rounded-full"
+                style={{
+                  backgroundColor: brandColor
+                    ? `color-mix(in srgb, ${brandColor} 18%, transparent)`
+                    : undefined,
+                }}
+                title={`${agentLabel} is editing`}
+              >
+                <AgentIcon className="size-3.5" aria-hidden="true" style={{ color: brandColor }} />
+              </div>
             </div>
           </div>
-        </div>
-        {/* Fade beneath the header so document content scrolls in softly. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-full z-10 h-3 bg-linear-to-b from-slide-bg-elevated to-transparent"
-        />
-      </div>
-
-      <div
-        ref={editorScrollRef}
-        className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-hidden px-6 pt-1 pb-4 text-left"
-      >
-        <div className="flex flex-col gap-2.5 text-1sm">
-          <PropertyRow label="title" value="Launch week recap" />
-          <PropertyRow
-            label="tags"
-            value={
-              <span className="inline-flex flex-wrap gap-1.5">
-                {['#launch', '#retro', '#v2'].map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-full bg-slide-accent/10 px-2 py-[2px] text-xs font-medium text-slide-accent"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </span>
-            }
+          {/* Fade beneath the header so document content scrolls in softly. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-full z-10 h-3 bg-linear-to-b from-slide-bg-elevated to-transparent"
           />
         </div>
 
-        <h4 className="text-lg font-semibold text-slide-text">Launch week recap</h4>
+        <div
+          data-revealing={animationDone ? undefined : 'true'}
+          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pt-1 pb-4 text-left subtle-scrollbar"
+        >
+          <FrontmatterPanel />
 
-        <p className="text-sm leading-relaxed text-slide-muted">
-          v2.0 went public on June 3 — the end of a quiet QA window and the start of launch week.
-        </p>
+          <OkEditorBody />
+          <HeroEditorReveal step={contentStep} live={animationDone} />
+        </div>
 
-        <p className="text-sm leading-relaxed text-slide-muted">
-          47 PRs merged across the cycle. Activity stayed close to zero through QA, then spiked on
-          launch day as the announcement went live.
-        </p>
-
-        {/* The section the agent writes */}
-        <div className="flex flex-col gap-2">
-          <RevealRow visible={showHeading}>
-            <h5
-              className={cn(
-                'text-sm font-semibold text-slide-text rounded transition-colors duration-500',
-                highlight === 'peak' && 'bg-primary/15 px-1 -mx-1',
-                highlight === 'active' && 'bg-primary/10 px-1 -mx-1',
-              )}
-            >
-              Highlights
-            </h5>
-          </RevealRow>
-
-          <ul className="flex flex-col gap-2 text-sm leading-relaxed text-slide-text mb-3">
-            <RevealRow visible={showCheck1}>
-              <TaskItem highlight={highlight}>Shipped v2.0 to public on Jun 3</TaskItem>
-            </RevealRow>
-            <RevealRow visible={showCheck2}>
-              <TaskItem highlight={highlight}>1.4k new signups in the first 24 hours</TaskItem>
-            </RevealRow>
-            <RevealRow visible={showCheck3}>
-              <TaskItem highlight={highlight}>Hit #1 on Product Hunt and front of HN</TaskItem>
-            </RevealRow>
-          </ul>
-
-          <RevealRow visible={showCallout} maxHeight="340px">
-            <DailyActivityChart visible={showCallout} />
-          </RevealRow>
+        {/* Word-count footer — pinned below the scrolling document body */}
+        <div className="relative flex shrink-0 items-center justify-between bg-slide-bg-elevated px-6 py-2 font-mono text-[11px] text-slide-muted tabular-nums">
+          {/* Fade above the footer so document content dissolves into it. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-full h-3 bg-linear-to-t from-slide-bg-elevated to-transparent"
+          />
+          <span className="flex items-center gap-1">
+            <GitBranch size={11} /> main
+          </span>
+          {/* Invisible placeholder pins a min width; live stats overlay it. */}
+          <span className="relative inline-grid">
+            <span className="invisible col-start-1 row-start-1" aria-hidden="true">
+              76 words · 385 chars · ~97 tokens
+            </span>
+            <HeroEditorStats />
+          </span>
         </div>
       </div>
-
-      {/* Word-count footer — pinned below the scrolling document body */}
-      <div className="relative flex shrink-0 items-center justify-between bg-slide-bg-elevated px-6 py-2 font-mono text-[11px] text-slide-muted tabular-nums">
-        {/* Fade above the footer so document content dissolves into it. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-full h-3 bg-linear-to-t from-slide-bg-elevated to-transparent"
-        />
-        <span className="flex items-center gap-1">
-          <GitBranch size={11} /> main
-        </span>
-        {/* Invisible placeholder pins width; visible text swaps on isFilled */}
-        <span className="relative inline-grid">
-          <span className="invisible col-start-1 row-start-1" aria-hidden="true">
-            76 words · 385 chars · ~97 tokens
-          </span>
-          <span className="col-start-1 row-start-1">
-            {wordCount} words · {charCount} chars · ~{tokenCount} tokens
-          </span>
-        </span>
-      </div>
-    </div>
+    </OkEditorProvider>
   );
 }
 
-function RevealRow({
-  visible,
-  children,
-  maxHeight = '160px',
-}: {
-  visible: boolean;
-  children: React.ReactNode;
-  maxHeight?: string;
-}) {
+function HeroEditorReveal({ step, live }: { step: number; live: boolean }) {
+  const { editor } = useOkEditor();
+  const appliedStep = useRef(step);
+  useEffect(() => {
+    if (!editor) return;
+    if (appliedStep.current !== step) {
+      appliedStep.current = step;
+      const json = parseEditorMarkdown(heroRevealMarkdown(step));
+      queueMicrotask(() => {
+        if (!editor.isDestroyed) editor.commands.setContent(json);
+      });
+    }
+    editor.setEditable(live);
+  }, [editor, step, live]);
+  return null;
+}
+
+function HeroEditorStats() {
+  const { words, chars, tokens } = useEditorDocStats();
   return (
-    <div
-      className="overflow-hidden transition-[opacity,max-height,transform] duration-400 ease-out"
-      style={{
-        opacity: visible ? 1 : 0,
-        maxHeight: visible ? maxHeight : '0px',
-        transform: visible ? 'translateY(0)' : 'translateY(4px)',
-      }}
-      aria-hidden={!visible}
-    >
-      {children}
-    </div>
+    <span className="col-start-1 row-start-1">
+      {words} words · {chars} chars · ~{tokens} tokens
+    </span>
   );
 }
 
@@ -676,143 +619,28 @@ function PropertyRow({ label, value }: { label: string; value: React.ReactNode }
   );
 }
 
-function TaskItem({
-  children,
-  highlight,
-}: {
-  children: React.ReactNode;
-  highlight: 'peak' | 'active' | 'none';
-}) {
+function FrontmatterPanel() {
+  const { mode } = useOkEditor();
+  if (mode === 'source') return null;
   return (
-    <li className="flex items-start gap-2">
-      <span
-        aria-hidden="true"
-        className="mt-[0.3em] size-4 shrink-0 rounded-[3px] border-[1.5px] border-border bg-transparent"
+    <div className="flex flex-col gap-2.5 pl-6 text-1sm">
+      <PropertyRow label="title" value={HERO_FRONTMATTER.title} />
+      <PropertyRow
+        label="tags"
+        value={
+          <span className="inline-flex flex-wrap gap-1.5">
+            {HERO_FRONTMATTER.tags.map((t) => (
+              <span
+                key={t}
+                className="rounded-full bg-slide-accent/10 px-2 py-[2px] text-xs font-medium text-slide-accent"
+              >
+                #{t}
+              </span>
+            ))}
+          </span>
+        }
       />
-      <span
-        className={cn(
-          'flex-1 rounded transition-colors duration-500',
-          highlight === 'peak' && 'bg-primary/15 px-1 -mx-1',
-          highlight === 'active' && 'bg-primary/10 px-1 -mx-1',
-        )}
-      >
-        {children}
-      </span>
-    </li>
-  );
-}
-
-function DailyActivityChart({ visible }: { visible: boolean }) {
-  const data = [
-    11, 4, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0.5, 0, 0, 0, 0, 1, 1.2, 1, 24, 8, 1, 0.2, 0,
-    0.5, 0,
-  ];
-  const max = 24;
-  const yTicks = [0, 6, 12, 18, 24];
-  const xLabels: ReadonlyArray<readonly [number, string]> = [
-    [0, 'May 10'],
-    [15, 'May 25'],
-    [30, 'Jun 9'],
-  ];
-
-  const W = 480;
-  const H = 150;
-  const padL = 22;
-  const padR = 6;
-  const padT = 6;
-  const padB = 18;
-  const innerW = W - padL - padR;
-  const innerH = H - padT - padB;
-  const xAt = (i: number) => padL + (i / (data.length - 1)) * innerW;
-  const yAt = (v: number) => padT + innerH - (v / max) * innerH;
-  const baseline = yAt(0);
-
-  const pts = data.map((v, i) => ({ x: xAt(i), y: yAt(v) }));
-  let linePath = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] ?? pts[i];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c1y = Math.min(baseline, p1.y + (p2.y - p0.y) / 6);
-    const c2y = Math.min(baseline, p2.y - (p3.y - p1.y) / 6);
-    linePath += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
-  }
-  const areaPath = `${linePath} L ${pts[pts.length - 1].x.toFixed(2)} ${baseline.toFixed(2)} L ${pts[0].x.toFixed(2)} ${baseline.toFixed(2)} Z`;
-
-  const gradientId = useId();
-
-  return (
-    <figure className="flex flex-col gap-3.5 rounded-xl bg-slide-bg p-4">
-      <figcaption className="text-[12.5px] font-medium text-slide-text/80">
-        PRs merged per day · last 30 days
-      </figcaption>
-      <div
-        className="overflow-hidden transition-[clip-path] duration-1200 ease-out"
-        style={{ clipPath: visible ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)' }}
-      >
-        <svg
-          viewBox={`0 0 ${W} ${H}`}
-          preserveAspectRatio="none"
-          className="block h-auto w-full"
-          aria-label="Daily PRs merged, May 10 to June 9, peaking at 24 on June 3"
-        >
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--slide-accent)" stopOpacity={0.24} />
-              <stop offset="100%" stopColor="var(--slide-accent)" stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
-          {yTicks.map((t) => (
-            <line
-              key={t}
-              x1={padL}
-              x2={W - padR}
-              y1={yAt(t)}
-              y2={yAt(t)}
-              className="stroke-slide-text/4"
-              strokeWidth={1}
-            />
-          ))}
-          {yTicks.map((t) => (
-            <text
-              key={t}
-              x={padL - 4}
-              y={yAt(t)}
-              textAnchor="end"
-              dominantBaseline="middle"
-              className="fill-slide-muted"
-              style={{ fontSize: 8 }}
-            >
-              {t}
-            </text>
-          ))}
-          {xLabels.map(([i, label]) => (
-            <text
-              key={label}
-              x={xAt(i)}
-              y={H - 4}
-              textAnchor="middle"
-              className="fill-slide-muted"
-              style={{ fontSize: 8 }}
-            >
-              {label}
-            </text>
-          ))}
-          <path d={areaPath} fill={`url(#${gradientId})`} />
-          <path
-            d={linePath}
-            fill="none"
-            stroke="var(--slide-accent)"
-            strokeWidth={1.4}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-    </figure>
+    </div>
   );
 }
 

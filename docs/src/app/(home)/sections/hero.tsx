@@ -109,25 +109,24 @@ export function Hero() {
             className="object-cover"
           />
           <div
-            className="relative z-10 aspect-3/4 w-full overflow-hidden rounded-[28px] border border-white/20 p-3 backdrop-blur-[20px] sm:aspect-square sm:p-4 md:aspect-video md:p-5"
+            className="relative z-10 flex h-[620px] w-full flex-col overflow-hidden rounded-[28px] border border-white/20 p-3 backdrop-blur-[20px] sm:p-4 lg:aspect-video lg:h-auto lg:p-5"
             style={{
               backgroundColor: 'rgba(255, 254, 254, 0.18)',
               boxShadow: '6px 6px 24px rgba(153, 173, 205, 0.2)',
             }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-xl">
-              {AGENTS.map(({ id }) => (
-                <div
-                  key={id}
-                  aria-hidden={activeId !== id}
-                  className={cn(
-                    'absolute inset-0 transition-opacity duration-500 ease-out',
-                    activeId === id ? 'opacity-100' : 'opacity-0',
-                  )}
-                >
-                  <HeroPreview agentId={id} active={activeId === id} />
-                </div>
-              ))}
+            {/* `flex-1 min-h-0` fills the card and hands a definite pixel height
+                down the editor's `h-full` chain — more robust than a percentage
+                chain (Safari in particular mishandles `height:100%` descendants of
+                some sized boxes). Single-pane (<lg) uses a fixed height so it stays
+                a consistent size rather than lurching as the container width snaps;
+                the lg two-pane reverts to `aspect-video` so the wide layout grows
+                taller with the screen instead of going wide-and-short. */}
+            <div className="relative min-h-0 w-full flex-1 overflow-hidden rounded-xl">
+              {/* One shared preview: the editor + intro animation are a single
+                  instance, so switching agents only cross-fades the chat panel —
+                  the intro never replays and editor edits persist. */}
+              <HeroPreview activeAgentId={activeId} />
             </div>
           </div>
         </div>

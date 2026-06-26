@@ -18,6 +18,7 @@ export default {
   ignoreIssues: {
     'packages/app/src/locales/**': ['files'],
     'packages/app/src/components/ui/*': ['exports'],
+    'docs/src/components/ui/*': ['exports'],
     'docs/source.config.ts': ['exports'],
     'packages/app/src/editor/extensions/internal-link.ts': ['exports', 'types'],
     'packages/app/src/editor/clipboard/serialize.ts': ['types'],
