@@ -270,6 +270,10 @@ msgstr ""
 msgid "{fileCount, plural, one {# file} other {# files}}"
 msgstr ""
 
+#: src/components/HelpPopover.tsx
+msgid "{formatted} GitHub stars"
+msgstr ""
+
 #: src/components/ActivityModeContent.tsx
 #: src/components/ActivityPanelFileRow.tsx
 #: src/components/SyncStatusBadge.tsx
@@ -1138,6 +1142,7 @@ msgstr ""
 #: src/components/EditorTabs.tsx
 #: src/components/InstallInClaudeDesktopDialog.tsx
 #: src/components/SeedDialog.tsx
+#: src/components/SubscribeForm.tsx
 #: src/components/ui/dialog.tsx
 #: src/components/ui/sheet.tsx
 #: src/editor/find-replace/FindReplaceBar.tsx
@@ -1265,6 +1270,10 @@ msgstr ""
 
 #: src/components/AutoSyncEnableWarning.tsx
 msgid "Commits happen automatically"
+msgstr ""
+
+#: src/components/HelpPopover.tsx
+msgid "Community"
 msgstr ""
 
 #: src/components/empty-state/use-create-suggestions.ts
@@ -2325,6 +2334,10 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
+#: src/components/SubscribeForm.tsx
+msgid "Email address"
+msgstr ""
+
 #: src/editor/slash-command/component-items.tsx
 msgid "Embed a video with native player controls."
 msgstr ""
@@ -2710,6 +2723,10 @@ msgstr ""
 msgid "File already exists"
 msgstr ""
 
+#: src/components/HelpPopover.tsx
+msgid "File an issue"
+msgstr ""
+
 #: src/components/FileTree.tsx
 msgid "File drop zone"
 msgstr ""
@@ -2892,6 +2909,10 @@ msgstr ""
 
 #: src/components/ClaudeReadinessBanner.tsx
 msgid "Get Claude Code"
+msgstr ""
+
+#: src/components/SubscribeForm.tsx
+msgid "Get product updates in your inbox."
 msgstr ""
 
 #: src/components/settings/SettingsDialogBody.tsx
@@ -3741,6 +3762,10 @@ msgstr ""
 
 #: src/editor/slash-command/component-items.tsx
 msgid "Multi-page PDF viewer with toolbar controls (thumbnails, page nav, zoom)."
+msgstr ""
+
+#: src/components/SubscribeForm.tsx
+msgid "my@email.com"
 msgstr ""
 
 #: src/components/SkillProperties.tsx
@@ -4687,6 +4712,10 @@ msgstr ""
 msgid "Plain"
 msgstr ""
 
+#: src/components/SubscribeForm.tsx
+msgid "Please enter a valid email address."
+msgstr ""
+
 #: src/components/settings/SettingsDialogBody.tsx
 #: src/components/settings/SettingsDialogShell.tsx
 msgid "Preferences"
@@ -4722,6 +4751,10 @@ msgstr ""
 
 #: src/components/ConsentDialogBody.tsx
 msgid "probe failed"
+msgstr ""
+
+#: src/components/HelpPopover.tsx
+msgid "Product updates"
 msgstr ""
 
 #: src/components/settings/ProjectTemplatesSection.tsx
@@ -5772,6 +5805,10 @@ msgstr ""
 msgid "Something went wrong starting the terminal."
 msgstr ""
 
+#: src/components/SubscribeForm.tsx
+msgid "Something went wrong. Please try again."
+msgstr ""
+
 #: src/lib/keyboard-shortcuts.ts
 msgid "Source editing"
 msgstr ""
@@ -5856,6 +5893,10 @@ msgstr ""
 msgid "status"
 msgstr ""
 
+#: src/components/SubscribeForm.tsx
+msgid "Stay in the loop"
+msgstr ""
+
 #: src/components/settings/SharingSection.tsx
 #: src/components/SharingModeField.tsx
 msgid "Stays on this computer."
@@ -5879,6 +5920,19 @@ msgstr ""
 
 #: src/components/settings/SettingsDialogBody.tsx
 msgid "Subfolder under current folder"
+msgstr ""
+
+#: src/components/HelpPopover.tsx
+#: src/components/SubscribeForm.tsx
+msgid "Subscribe"
+msgstr ""
+
+#: src/components/SubscribeForm.tsx
+msgid "Subscribing..."
+msgstr ""
+
+#: src/components/SubscribeForm.tsx
+msgid "Subscriptions aren't available right now."
 msgstr ""
 
 #: src/lib/keyboard-shortcuts.ts
@@ -6107,6 +6161,10 @@ msgstr ""
 
 #: src/components/PropertyWidgets.tsx
 msgid "Text"
+msgstr ""
+
+#: src/components/SubscribeForm.tsx
+msgid "Thanks for subscribing. Watch your inbox for product updates."
 msgstr ""
 
 #: src/components/ShareReceiveDialog.tsx
@@ -6803,6 +6861,10 @@ msgstr ""
 msgid "We'll create a repository and start syncing — no terminal needed."
 msgstr ""
 
+#: src/components/HelpPopover.tsx
+msgid "Website"
+msgstr ""
+
 #: src/components/NewSkillDialog.tsx
 msgid "What agents match on to decide when to use the skill."
 msgstr ""
@@ -6826,6 +6888,10 @@ msgstr ""
 
 #: src/components/empty-state/empty-state-copy.ts
 msgid "What would you like to create?"
+msgstr ""
+
+#: src/components/HelpPopover.tsx
+msgid "What's new"
 msgstr ""
 
 #: src/components/settings/SettingsDialogBody.tsx
@@ -6955,6 +7021,10 @@ msgstr ""
 
 #: src/components/ConsentDialogBody.tsx
 msgid "You picked your home directory. OpenKnowledge will index everything in your home tree — large and may surface personal files."
+msgstr ""
+
+#: src/components/SubscribeForm.tsx
+msgid "You're subscribed!"
 msgstr ""
 
 #: src/components/settings/SettingsDialogBody.tsx

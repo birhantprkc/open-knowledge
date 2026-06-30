@@ -270,6 +270,10 @@ msgstr "{failedCount, plural, one {1 file failed to upload} other {{failedCount}
 msgid "{fileCount, plural, one {# file} other {# files}}"
 msgstr "{fileCount, plural, one {# file} other {# files}}"
 
+#: src/components/HelpPopover.tsx
+msgid "{formatted} GitHub stars"
+msgstr "{formatted} GitHub stars"
+
 #: src/components/ActivityModeContent.tsx
 #: src/components/ActivityPanelFileRow.tsx
 #: src/components/SyncStatusBadge.tsx
@@ -1143,6 +1147,7 @@ msgstr "Cloning..."
 #: src/components/EditorTabs.tsx
 #: src/components/InstallInClaudeDesktopDialog.tsx
 #: src/components/SeedDialog.tsx
+#: src/components/SubscribeForm.tsx
 #: src/components/ui/dialog.tsx
 #: src/components/ui/sheet.tsx
 #: src/editor/find-replace/FindReplaceBar.tsx
@@ -1271,6 +1276,10 @@ msgstr "Commit or stash changes to switch:"
 #: src/components/AutoSyncEnableWarning.tsx
 msgid "Commits happen automatically"
 msgstr "Commits happen automatically"
+
+#: src/components/HelpPopover.tsx
+msgid "Community"
+msgstr "Community"
 
 #: src/components/empty-state/use-create-suggestions.ts
 msgid "Competitor research"
@@ -2330,6 +2339,10 @@ msgstr "Edits at the source land here — no copy-paste drift."
 msgid "Email"
 msgstr "Email"
 
+#: src/components/SubscribeForm.tsx
+msgid "Email address"
+msgstr "Email address"
+
 #: src/editor/slash-command/component-items.tsx
 msgid "Embed a video with native player controls."
 msgstr "Embed a video with native player controls."
@@ -2715,6 +2728,10 @@ msgstr "File"
 msgid "File already exists"
 msgstr "File already exists"
 
+#: src/components/HelpPopover.tsx
+msgid "File an issue"
+msgstr "File an issue"
+
 #: src/components/FileTree.tsx
 msgid "File drop zone"
 msgstr "File drop zone"
@@ -2898,6 +2915,10 @@ msgstr "Get {displayName}"
 #: src/components/ClaudeReadinessBanner.tsx
 msgid "Get Claude Code"
 msgstr "Get Claude Code"
+
+#: src/components/SubscribeForm.tsx
+msgid "Get product updates in your inbox."
+msgstr "Get product updates in your inbox."
 
 #: src/components/settings/SettingsDialogBody.tsx
 msgid "Git auto-sync"
@@ -3747,6 +3768,10 @@ msgstr "moved template"
 #: src/editor/slash-command/component-items.tsx
 msgid "Multi-page PDF viewer with toolbar controls (thumbnails, page nav, zoom)."
 msgstr "Multi-page PDF viewer with toolbar controls (thumbnails, page nav, zoom)."
+
+#: src/components/SubscribeForm.tsx
+msgid "my@email.com"
+msgstr "my@email.com"
 
 #: src/components/SkillProperties.tsx
 #: src/components/TemplateProperties.tsx
@@ -4692,6 +4717,10 @@ msgstr "Pin tab"
 msgid "Plain"
 msgstr "Plain"
 
+#: src/components/SubscribeForm.tsx
+msgid "Please enter a valid email address."
+msgstr "Please enter a valid email address."
+
 #: src/components/settings/SettingsDialogBody.tsx
 #: src/components/settings/SettingsDialogShell.tsx
 msgid "Preferences"
@@ -4728,6 +4757,10 @@ msgstr "Private repository"
 #: src/components/ConsentDialogBody.tsx
 msgid "probe failed"
 msgstr "probe failed"
+
+#: src/components/HelpPopover.tsx
+msgid "Product updates"
+msgstr "Product updates"
 
 #: src/components/settings/ProjectTemplatesSection.tsx
 msgid "project"
@@ -5777,6 +5810,10 @@ msgstr "Something went wrong opening this file (HTTP {status})."
 msgid "Something went wrong starting the terminal."
 msgstr "Something went wrong starting the terminal."
 
+#: src/components/SubscribeForm.tsx
+msgid "Something went wrong. Please try again."
+msgstr "Something went wrong. Please try again."
+
 #: src/lib/keyboard-shortcuts.ts
 msgid "Source editing"
 msgstr "Source editing"
@@ -5861,6 +5898,10 @@ msgstr "Starting sign-in flow"
 msgid "status"
 msgstr "status"
 
+#: src/components/SubscribeForm.tsx
+msgid "Stay in the loop"
+msgstr "Stay in the loop"
+
 #: src/components/settings/SharingSection.tsx
 #: src/components/SharingModeField.tsx
 msgid "Stays on this computer."
@@ -5885,6 +5926,19 @@ msgstr "Strikethrough"
 #: src/components/settings/SettingsDialogBody.tsx
 msgid "Subfolder under current folder"
 msgstr "Subfolder under current folder"
+
+#: src/components/HelpPopover.tsx
+#: src/components/SubscribeForm.tsx
+msgid "Subscribe"
+msgstr "Subscribe"
+
+#: src/components/SubscribeForm.tsx
+msgid "Subscribing..."
+msgstr "Subscribing..."
+
+#: src/components/SubscribeForm.tsx
+msgid "Subscriptions aren't available right now."
+msgstr "Subscriptions aren't available right now."
 
 #: src/lib/keyboard-shortcuts.ts
 msgid "Suggestion menu navigation"
@@ -6113,6 +6167,10 @@ msgstr "Terminal settings not loaded yet — try again in a moment."
 #: src/components/PropertyWidgets.tsx
 msgid "Text"
 msgstr "Text"
+
+#: src/components/SubscribeForm.tsx
+msgid "Thanks for subscribing. Watch your inbox for product updates."
+msgstr "Thanks for subscribing. Watch your inbox for product updates."
 
 #: src/components/ShareReceiveDialog.tsx
 msgid "That folder isn't an OpenKnowledge project yet. Initialize it and open?"
@@ -6808,6 +6866,10 @@ msgstr "We'll build <0>openknowledge.skill</0>, save it to <1>~/Downloads</1>, a
 msgid "We'll create a repository and start syncing — no terminal needed."
 msgstr "We'll create a repository and start syncing — no terminal needed."
 
+#: src/components/HelpPopover.tsx
+msgid "Website"
+msgstr "Website"
+
 #: src/components/NewSkillDialog.tsx
 msgid "What agents match on to decide when to use the skill."
 msgstr "What agents match on to decide when to use the skill."
@@ -6832,6 +6894,10 @@ msgstr "What should the AI do? (optional)"
 #: src/components/empty-state/empty-state-copy.ts
 msgid "What would you like to create?"
 msgstr "What would you like to create?"
+
+#: src/components/HelpPopover.tsx
+msgid "What's new"
+msgstr "What's new"
 
 #: src/components/settings/SettingsDialogBody.tsx
 msgid "When enabled, the agent opens or refreshes the preview after each edit. Disable if you manage your own preview window (OK Desktop, a browser tab on another display, etc.)."
@@ -6961,6 +7027,10 @@ msgstr "You picked the filesystem root (/). Scaffolding here will scan every fil
 #: src/components/ConsentDialogBody.tsx
 msgid "You picked your home directory. OpenKnowledge will index everything in your home tree — large and may surface personal files."
 msgstr "You picked your home directory. OpenKnowledge will index everything in your home tree — large and may surface personal files."
+
+#: src/components/SubscribeForm.tsx
+msgid "You're subscribed!"
+msgstr "You're subscribed!"
 
 #: src/components/settings/SettingsDialogBody.tsx
 #: src/components/SyncStatusBadge.tsx

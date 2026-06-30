@@ -1,14 +1,18 @@
 const REPO_API_URL = 'https://api.github.com/repos/inkeep/open-knowledge';
 
-export async function getGitHubStars(): Promise<number | null> {
+export async function getGitHubStars(init?: RequestInit): Promise<number | null> {
+  const { signal: callerSignal, ...restInit } = init ?? {};
+  const signal = callerSignal
+    ? AbortSignal.any([AbortSignal.timeout(5_000), callerSignal])
+    : AbortSignal.timeout(5_000);
   try {
     const res = await fetch(REPO_API_URL, {
-      signal: AbortSignal.timeout(5_000),
-      next: { revalidate: 3600 },
       headers: {
         accept: 'application/vnd.github+json',
-        'user-agent': 'openknowledge.ai site nav',
+        'user-agent': 'openknowledge.ai',
       },
+      ...restInit,
+      signal,
     });
     if (!res.ok) {
       console.warn(`[github-stars] GitHub API responded ${res.status}`);

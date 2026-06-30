@@ -1,9 +1,11 @@
+import { getGitHubStars } from '@inkeep/open-knowledge-core';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { BookOpen, CircleHelp } from 'lucide-react';
-import type { ComponentProps, FC } from 'react';
-import { useState } from 'react';
+import { BookOpen, CircleDot, CircleHelp, Globe, Mail, Megaphone, Star } from 'lucide-react';
+import type { ComponentProps, FC, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { SubscribeForm } from '@/components/SubscribeForm';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -11,33 +13,117 @@ import { dispatchExternalLinkClick } from '@/lib/external-link';
 import { cn } from '@/lib/utils';
 import { DiscordIcon } from './icons/discord';
 import { GithubIcon } from './icons/github';
-import { OkIcon } from './icons/ok';
 import { XTwitterIcon } from './icons/x-twitter';
 
-const links: Array<{
+const GITHUB_REPO_URL = 'https://github.com/inkeep/open-knowledge';
+
+interface ResourceLink {
   label: string | MessageDescriptor;
   href: string;
   icon: FC<ComponentProps<'svg'>>;
-  iconClassName?: string;
-}> = [
-  { label: msg`Docs`, href: 'https://openknowledge.ai/docs', icon: BookOpen },
-  { label: 'GitHub', href: 'https://github.com/inkeep/open-knowledge', icon: GithubIcon },
-  { label: 'Discord', href: 'https://discord.com/invite/YujKpFN49', icon: DiscordIcon },
-  { label: 'X', href: 'https://x.com/OpenKnowledgeAI', icon: XTwitterIcon },
+}
+
+interface ResourceSection {
+  key: string;
+  heading: MessageDescriptor;
+  links: ResourceLink[];
+}
+
+const sections: ResourceSection[] = [
   {
-    label: 'OpenKnowledge',
-    href: 'https://openknowledge.ai/',
-    icon: OkIcon,
-    iconClassName: 'scale-125 grayscale transition-[filter] group-hover:grayscale-0',
+    key: 'resources',
+    heading: msg`Resources`,
+    links: [
+      { label: msg`Docs`, href: 'https://openknowledge.ai/docs', icon: BookOpen },
+      { label: msg`File an issue`, href: `${GITHUB_REPO_URL}/issues/new`, icon: CircleDot },
+      { label: msg`Website`, href: 'https://openknowledge.ai/', icon: Globe },
+    ],
+  },
+  {
+    key: 'community',
+    heading: msg`Community`,
+    links: [
+      { label: 'Discord', href: 'https://discord.com/invite/YujKpFN49', icon: DiscordIcon },
+      { label: 'X (Twitter)', href: 'https://x.com/OpenKnowledgeAI', icon: XTwitterIcon },
+      { label: 'GitHub', href: GITHUB_REPO_URL, icon: GithubIcon },
+    ],
   },
 ];
+
+const WHATS_NEW_HREF = `${GITHUB_REPO_URL}/releases`;
+
+const rowClassName =
+  'group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-azure-900/5 dark:hover:bg-white/20 hover:text-primary';
+
+function formatStarCount(count: number): string {
+  if (count < 1000) return String(count);
+  const thousands = count / 1000;
+  return `${thousands >= 10 ? Math.round(thousands) : thousands.toFixed(1)}k`;
+}
+
+const StarCount: FC<{ count: number }> = ({ count }) => {
+  const { t } = useLingui();
+  const formatted = formatStarCount(count);
+  return (
+    <span
+      role="img"
+      className="ml-auto flex items-center gap-1 text-xs tabular-nums text-muted-foreground"
+      aria-label={t`${formatted} GitHub stars`}
+    >
+      <Star className="size-3 fill-current" aria-hidden="true" />
+      {formatted}
+    </span>
+  );
+};
+
+const ResourceLinkRow: FC<{ link: ResourceLink; trailing?: ReactNode }> = ({ link, trailing }) => {
+  const { t } = useLingui();
+  const { label, href, icon: Icon } = link;
+  return (
+    <li>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => dispatchExternalLinkClick(e, href)}
+        onAuxClick={(e) => dispatchExternalLinkClick(e, href)}
+        className={rowClassName}
+      >
+        <Icon aria-hidden="true" className="size-4 shrink-0" />
+        {typeof label === 'string' ? label : t(label)}
+        {trailing}
+      </a>
+    </li>
+  );
+};
+
+const SectionHeading: FC<{ children: ReactNode }> = ({ children }) => (
+  <p className="font-mono tracking-wide uppercase text-muted-foreground text-xs mb-1">{children}</p>
+);
 
 export const HelpPopover: FC = () => {
   const { t } = useLingui();
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
+  const [starCount, setStarCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!popoverOpen || starCount !== null) return;
+    const controller = new AbortController();
+    getGitHubStars({ signal: controller.signal }).then((count) => {
+      if (count !== null) setStarCount(count);
+    });
+    return () => controller.abort();
+  }, [popoverOpen, starCount]);
 
   return (
-    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+    <Popover
+      open={popoverOpen}
+      onOpenChange={(open) => {
+        setPopoverOpen(open);
+        if (!open) setSubscribeOpen(false);
+      }}
+    >
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
@@ -57,29 +143,59 @@ export const HelpPopover: FC = () => {
           <Trans>Resources</Trans>
         </TooltipContent>
       </Tooltip>
-      <PopoverContent align="end" className="w-48 p-3">
-        <p className="font-mono tracking-wide uppercase text-muted-foreground text-xs mb-1">
-          <Trans>Resources</Trans>
-        </p>
-        <nav aria-label={t`Resources`}>
-          <ul className="space-y-0.5">
-            {links.map(({ label, href, icon: Icon, iconClassName }) => (
-              <li key={href}>
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => dispatchExternalLinkClick(e, href)}
-                  onAuxClick={(e) => dispatchExternalLinkClick(e, href)}
-                  className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-azure-900/5 dark:hover:bg-white/20 hover:text-primary"
-                >
-                  <Icon aria-hidden="true" className={cn('size-4 shrink-0', iconClassName)} />
-                  {typeof label === 'string' ? label : t(label)}
-                </a>
+      <PopoverContent align="end" className="w-56 p-3">
+        {sections.map((section, index) => (
+          <div key={section.key} className={cn(index > 0 && 'mt-3')}>
+            <SectionHeading>{t(section.heading)}</SectionHeading>
+            <nav aria-label={t(section.heading)}>
+              <ul className="space-y-0.5">
+                {section.links.map((link) => (
+                  <ResourceLinkRow
+                    key={link.href}
+                    link={link}
+                    trailing={
+                      link.href === GITHUB_REPO_URL && starCount !== null ? (
+                        <StarCount count={starCount} />
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </ul>
+            </nav>
+          </div>
+        ))}
+
+        <div className="mt-3">
+          <SectionHeading>
+            <Trans>Product updates</Trans>
+          </SectionHeading>
+          <nav aria-label={t`Product updates`}>
+            <ul className="space-y-0.5">
+              <ResourceLinkRow
+                link={{ label: msg`What's new`, href: WHATS_NEW_HREF, icon: Megaphone }}
+              />
+              <li>
+                <Popover open={subscribeOpen} onOpenChange={setSubscribeOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={cn(rowClassName, 'h-auto w-full justify-start font-normal')}
+                    >
+                      <Mail aria-hidden="true" className="size-4 shrink-0" />
+                      <Trans>Subscribe</Trans>
+                    </Button>
+                  </PopoverTrigger>
+                  {/* Open to the left of the whole dropdown: the row is inset
+                      by the dropdown's p-3, so sideOffset clears that padding
+                      plus a gap rather than overlapping the menu. */}
+                  <PopoverContent side="left" align="center" sideOffset={20} className="w-80">
+                    <SubscribeForm autoFocus onDismiss={() => setSubscribeOpen(false)} />
+                  </PopoverContent>
+                </Popover>
               </li>
-            ))}
-          </ul>
-        </nav>
+            </ul>
+          </nav>
+        </div>
       </PopoverContent>
     </Popover>
   );
