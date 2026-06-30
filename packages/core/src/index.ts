@@ -1071,6 +1071,7 @@ export { createCodeFenceTracker } from './utils/code-fence-tracker.ts';
 export { isEmbedUrlRewritable, rewriteEmbedUrl } from './utils/embed-url-rewrite.ts';
 export { extensionOf } from './utils/extension.ts';
 export { formatFileSize } from './utils/file-size.ts';
+export { getGitHubStars } from './utils/github-stars.ts';
 export {
   AGENT_COLORS,
   AGENT_ICON_COLORS,

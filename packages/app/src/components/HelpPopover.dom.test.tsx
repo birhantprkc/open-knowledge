@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -28,47 +28,99 @@ async function renderOpenHelpPopover() {
   await userEvent.click(screen.getByRole('button', { name: 'Resources' }));
 }
 
+function linkShape(link: HTMLElement) {
+  return {
+    label: Array.from(link.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent)
+      .join('')
+      .trim(),
+    href: link.getAttribute('href'),
+    target: link.getAttribute('target'),
+    rel: link.getAttribute('rel'),
+    hasIcon: link.querySelector('svg') !== null,
+  };
+}
+
+const originalFetch = globalThis.fetch;
+
 describe('HelpPopover runtime behavior', () => {
-  afterEach(() => cleanup());
+  beforeEach(() => {
+    globalThis.fetch = mock(
+      async () =>
+        new Response(JSON.stringify({ stargazers_count: 1234 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+    ) as typeof globalThis.fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+  });
 
   test('exports the component', async () => {
     const mod = await import('./HelpPopover');
     expect(typeof mod.HelpPopover).toBe('function');
   });
 
-  test('opens a resources-only nav whose accessible names match the visible heading', async () => {
+  test('groups links under Resources, Community, and Product updates navs', async () => {
     await renderOpenHelpPopover();
 
-    expect(screen.getAllByText('Resources').length).toBeGreaterThanOrEqual(2);
-    const nav = screen.getByRole('navigation', { name: 'Resources' });
-    expect(nav).not.toBeNull();
+    for (const heading of ['Resources', 'Community', 'Product updates']) {
+      expect(screen.getByRole('navigation', { name: heading })).not.toBeNull();
+    }
     expect(screen.queryByText(/Help\s*&\s*Resources/i)).toBeNull();
-    expect(screen.queryByText('Setup')).toBeNull();
     expect(screen.queryByText('Settings')).toBeNull();
-    expect(screen.queryByText('Install for Claude Chat')).toBeNull();
   });
 
-  test('renders the external resource links in the required order', async () => {
+  test('renders Resources links in the required order', async () => {
     await renderOpenHelpPopover();
 
     const nav = screen.getByRole('navigation', { name: 'Resources' });
     const links = within(nav).getAllByRole('link');
-    expect(
-      links.map((link) => ({
-        label: Array.from(link.childNodes)
-          .filter((node) => node.nodeType === Node.TEXT_NODE)
-          .map((node) => node.textContent)
-          .join('')
-          .trim(),
-        href: link.getAttribute('href'),
-        target: link.getAttribute('target'),
-        rel: link.getAttribute('rel'),
-        hasIcon: link.querySelector('svg') !== null,
-      })),
-    ).toEqual([
+    expect(links.map(linkShape)).toEqual([
       {
         label: 'Docs',
         href: 'https://openknowledge.ai/docs',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        hasIcon: true,
+      },
+      {
+        label: 'File an issue',
+        href: 'https://github.com/inkeep/open-knowledge/issues/new',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        hasIcon: true,
+      },
+      {
+        label: 'Website',
+        href: 'https://openknowledge.ai/',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        hasIcon: true,
+      },
+    ]);
+  });
+
+  test('renders Community links in the required order', async () => {
+    await renderOpenHelpPopover();
+
+    const nav = screen.getByRole('navigation', { name: 'Community' });
+    const links = within(nav).getAllByRole('link');
+    expect(links.map(linkShape)).toEqual([
+      {
+        label: 'Discord',
+        href: 'https://discord.com/invite/YujKpFN49',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        hasIcon: true,
+      },
+      {
+        label: 'X (Twitter)',
+        href: 'https://x.com/OpenKnowledgeAI',
         target: '_blank',
         rel: 'noopener noreferrer',
         hasIcon: true,
@@ -80,27 +132,28 @@ describe('HelpPopover runtime behavior', () => {
         rel: 'noopener noreferrer',
         hasIcon: true,
       },
-      {
-        label: 'Discord',
-        href: 'https://discord.com/invite/YujKpFN49',
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        hasIcon: true,
-      },
-      {
-        label: 'X',
-        href: 'https://x.com/OpenKnowledgeAI',
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        hasIcon: true,
-      },
-      {
-        label: 'OpenKnowledge',
-        href: 'https://openknowledge.ai/',
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        hasIcon: true,
-      },
     ]);
+  });
+
+  test('shows the fetched GitHub star count on the GitHub row', async () => {
+    await renderOpenHelpPopover();
+
+    const nav = screen.getByRole('navigation', { name: 'Community' });
+    const githubLink = within(nav).getByRole('link', { name: /GitHub/ });
+    await waitFor(() => expect(within(githubLink).getByText('1.2k')).not.toBeNull());
+  });
+
+  test('Product updates exposes a What’s new link and a Subscribe action', async () => {
+    await renderOpenHelpPopover();
+
+    const nav = screen.getByRole('navigation', { name: 'Product updates' });
+    const whatsNew = within(nav).getByRole('link', { name: "What's new" });
+    expect(whatsNew.getAttribute('href')).toBe('https://github.com/inkeep/open-knowledge/releases');
+
+    const subscribe = within(nav).getByRole('button', { name: 'Subscribe' });
+    expect(subscribe).not.toBeNull();
+
+    await userEvent.click(subscribe);
+    expect(screen.getByTestId('subscribe-email')).not.toBeNull();
   });
 });
