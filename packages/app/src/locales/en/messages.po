@@ -737,6 +737,7 @@ msgstr "Ask {0} CLI"
 
 #: src/components/BottomComposer.tsx
 #: src/components/EditorFooter.tsx
+#: src/components/OnboardingCard.tsx
 #: src/editor/bubble-menu/EditWithAiBubbleButton.tsx
 #: src/lib/keyboard-shortcuts.ts
 msgid "Ask AI"
@@ -1292,6 +1293,10 @@ msgstr "Competitor research"
 #: src/components/CloneDialog.tsx
 msgid "Complete"
 msgstr "Complete"
+
+#: src/components/OnboardingCard.tsx
+msgid "Completed:"
+msgstr "Completed:"
 
 #: src/lib/keyboard-shortcuts.ts
 msgid "Component boundary navigation"
@@ -1901,8 +1906,13 @@ msgid "Create with {0} CLI"
 msgstr "Create with {0} CLI"
 
 #: src/components/FileTree.tsx
+#: src/components/OnboardingCard.tsx
 msgid "Create your first file"
 msgstr "Create your first file"
+
+#: src/components/OnboardingCard.tsx
+msgid "Create your first project"
+msgstr "Create your first project"
 
 #: src/components/FolderTimelineCard.tsx
 msgid "created folder"
@@ -2116,6 +2126,7 @@ msgstr "Disconnecting"
 
 #: src/components/ClaudeReadinessBanner.tsx
 #: src/components/NavigatorApp.tsx
+#: src/components/OnboardingCard.tsx
 #: src/components/settings/SharingSection.tsx
 #: src/components/TerminalCliMissingBanner.tsx
 msgid "Dismiss"
@@ -2931,6 +2942,10 @@ msgstr "Get Claude Code"
 #: src/components/SubscribeForm.tsx
 msgid "Get product updates in your inbox."
 msgstr "Get product updates in your inbox."
+
+#: src/components/OnboardingCard.tsx
+msgid "Get set up"
+msgstr "Get set up"
 
 #: src/components/settings/SettingsDialogBody.tsx
 msgid "Git auto-sync"
@@ -7039,6 +7054,10 @@ msgstr "You picked the filesystem root (/). Scaffolding here will scan every fil
 #: src/components/ConsentDialogBody.tsx
 msgid "You picked your home directory. OpenKnowledge will index everything in your home tree — large and may surface personal files."
 msgstr "You picked your home directory. OpenKnowledge will index everything in your home tree — large and may surface personal files."
+
+#: src/components/OnboardingCard.tsx
+msgid "You're all set up!"
+msgstr "You're all set up!"
 
 #: src/components/SubscribeForm.tsx
 msgid "You're subscribed!"

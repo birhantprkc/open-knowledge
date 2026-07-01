@@ -21,6 +21,7 @@ import { installDeepLinkListener } from '@/lib/install-deep-link-listener';
 import { installOnboardingToastListener } from '@/lib/install-onboarding-toast';
 import { installServerDriftListener } from '@/lib/install-server-drift-listener';
 import { installMcpConsentListener } from '@/lib/mcp-consent-store';
+import { installOnboardingCardStore } from '@/lib/onboarding-card-store';
 import { initWebVitals } from '@/lib/perf';
 import {
   installColdMountInstrumentation,
@@ -51,6 +52,8 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'test') {
 }
 
 installUpdateNoticesBridge();
+
+installOnboardingCardStore();
 
 installRelaunchStateBridge();
 

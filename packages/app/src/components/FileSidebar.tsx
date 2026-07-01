@@ -24,6 +24,7 @@ import {
   useHandoffDispatch,
 } from '@/components/handoff/useHandoffDispatch';
 import { useInstalledAgents } from '@/components/handoff/useInstalledAgents';
+import { OnboardingCardMount } from '@/components/OnboardingCard';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { onPillRenderError, SidebarSearchBar } from '@/components/SidebarSearchBar';
 import { SkillsSidebarSection } from '@/components/SkillsSidebarSection';
@@ -666,6 +667,7 @@ function FileSidebarInner({ onOpenSearch }: FileSidebarProps) {
               />
             </SidebarContent>
             <SidebarFooter className="px-0">
+              <OnboardingCardMount />
               <UpdateNotices />
               {typeof window !== 'undefined' && window.okDesktop ? (
                 <SidebarMenu>

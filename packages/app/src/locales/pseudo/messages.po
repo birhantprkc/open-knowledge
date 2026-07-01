@@ -732,6 +732,7 @@ msgstr ""
 
 #: src/components/BottomComposer.tsx
 #: src/components/EditorFooter.tsx
+#: src/components/OnboardingCard.tsx
 #: src/editor/bubble-menu/EditWithAiBubbleButton.tsx
 #: src/lib/keyboard-shortcuts.ts
 msgid "Ask AI"
@@ -1286,6 +1287,10 @@ msgstr ""
 
 #: src/components/CloneDialog.tsx
 msgid "Complete"
+msgstr ""
+
+#: src/components/OnboardingCard.tsx
+msgid "Completed:"
 msgstr ""
 
 #: src/lib/keyboard-shortcuts.ts
@@ -1896,7 +1901,12 @@ msgid "Create with {0} CLI"
 msgstr ""
 
 #: src/components/FileTree.tsx
+#: src/components/OnboardingCard.tsx
 msgid "Create your first file"
+msgstr ""
+
+#: src/components/OnboardingCard.tsx
+msgid "Create your first project"
 msgstr ""
 
 #: src/components/FolderTimelineCard.tsx
@@ -2111,6 +2121,7 @@ msgstr ""
 
 #: src/components/ClaudeReadinessBanner.tsx
 #: src/components/NavigatorApp.tsx
+#: src/components/OnboardingCard.tsx
 #: src/components/settings/SharingSection.tsx
 #: src/components/TerminalCliMissingBanner.tsx
 msgid "Dismiss"
@@ -2925,6 +2936,10 @@ msgstr ""
 
 #: src/components/SubscribeForm.tsx
 msgid "Get product updates in your inbox."
+msgstr ""
+
+#: src/components/OnboardingCard.tsx
+msgid "Get set up"
 msgstr ""
 
 #: src/components/settings/SettingsDialogBody.tsx
@@ -7033,6 +7048,10 @@ msgstr ""
 
 #: src/components/ConsentDialogBody.tsx
 msgid "You picked your home directory. OpenKnowledge will index everything in your home tree — large and may surface personal files."
+msgstr ""
+
+#: src/components/OnboardingCard.tsx
+msgid "You're all set up!"
 msgstr ""
 
 #: src/components/SubscribeForm.tsx

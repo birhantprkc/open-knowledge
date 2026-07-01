@@ -35,6 +35,7 @@ import type { EditorSurface } from '@/editor/selection-stats';
 import { useSelectionContext } from '@/hooks/use-selection-context';
 import { VISIBLE_TARGETS } from '@/lib/handoff/targets';
 import { matchesKeyboardShortcut } from '@/lib/keyboard-shortcuts';
+import { recordOnboardingAskedAi } from '@/lib/onboarding-signals';
 import {
   loadStickyAgent,
   parseStickyCliId,
@@ -344,15 +345,20 @@ export function BottomComposer({
         toast.error(t`Couldn't open the terminal — please try again.`);
         return;
       }
+      recordOnboardingAskedAi();
       clearComposer();
       return;
     }
     if (resolvedTarget === null) return;
     setPending(true);
-    void dispatch(resolvedTarget.id, input).finally(() => {
-      setPending(false);
-      clearComposer();
-    });
+    void dispatch(resolvedTarget.id, input)
+      .then((outcome) => {
+        if (outcome.ok) recordOnboardingAskedAi();
+      })
+      .finally(() => {
+        setPending(false);
+        clearComposer();
+      });
   };
 
   const submit = () => {

@@ -120,6 +120,9 @@ mock.module('@/hooks/use-selection-context', () => ({
   usePublishFrontmatterSelection: () => {},
 }));
 
+const recordAskedAiSpy = mock(() => {});
+mock.module('@/lib/onboarding-signals', () => ({ recordOnboardingAskedAi: recordAskedAiSpy }));
+
 const dispatchCalls: Array<{ target: string; input: unknown }> = [];
 const buildArgs: Array<{
   docName: string | null;
@@ -204,6 +207,22 @@ async function renderComposerWithTerminal(docName = 'notes') {
   );
 }
 
+async function renderComposerWithThrowingTerminal(docName = 'notes') {
+  const { BottomComposer } = await import('./BottomComposer');
+  const { TerminalLaunchProvider } = await import('./handoff/TerminalLaunchContext');
+  return render(
+    <TerminalLaunchProvider
+      value={{
+        launchInTerminal: () => {
+          throw new Error('no terminal session');
+        },
+      }}
+    >
+      <BottomComposer docName={docName} surface="wysiwyg" />
+    </TerminalLaunchProvider>,
+  );
+}
+
 async function renderFolderComposer(folderPath = 'specs/foo') {
   const { BottomComposer } = await import('./BottomComposer');
   return render(<BottomComposer folderPath={folderPath} />);
@@ -260,6 +279,7 @@ beforeEach(() => {
   mockInlineMentions = [];
   emitMentions = null;
   dispatchCalls.length = 0;
+  recordAskedAiSpy.mockClear();
   buildArgs.length = 0;
   terminalLaunchCalls.length = 0;
   toastErrors.length = 0;
@@ -417,6 +437,26 @@ describe('BottomComposer (dispatch + picker + sticky default)', () => {
     expect(dispatchCalls[0]?.target).toBe('claude-code');
   });
 
+  test('a successful dispatch records the Ask-AI onboarding step', async () => {
+    await renderComposer('specs/foo/SPEC');
+    fireEvent.change(getInput(), { target: { value: 'condense this doc' } });
+    fireEvent.keyDown(getInput(), { key: 'Enter' });
+
+    await waitFor(() => expect(dispatchCalls).toHaveLength(1));
+    await waitFor(() => expect(recordAskedAiSpy).toHaveBeenCalledTimes(1));
+  });
+
+  test('an aborted submit (null compose input) does not record the Ask-AI step', async () => {
+    builderReturnsNull = true;
+    await renderComposer('specs/foo/SPEC');
+    fireEvent.change(getInput(), { target: { value: 'this submit aborts' } });
+    fireEvent.keyDown(getInput(), { key: 'Enter' });
+
+    await waitFor(() => expect(toastErrors.length).toBeGreaterThan(0));
+    expect(dispatchCalls).toHaveLength(0);
+    expect(recordAskedAiSpy).not.toHaveBeenCalled();
+  });
+
   test('picking a non-default agent dispatches to it and persists the choice', async () => {
     const user = userEvent.setup();
     await renderComposer();
@@ -450,6 +490,24 @@ describe('BottomComposer (dispatch + picker + sticky default)', () => {
     expect(terminalLaunchCalls[0]?.input).toMatchObject({
       compose: { instruction: 'summarize this doc' },
     });
+    expect(dispatchCalls).toHaveLength(0);
+    expect(recordAskedAiSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('a terminal launch that throws keeps the draft, toasts, and records no Ask-AI step', async () => {
+    const user = userEvent.setup();
+    await renderComposerWithThrowingTerminal();
+
+    await user.click(screen.getByTestId('ask-ai-agent-trigger'));
+    await user.click(await screen.findByTestId('ask-ai-agent-option-terminal'));
+
+    fireEvent.change(getInput(), { target: { value: 'summarize this doc' } });
+    fireEvent.keyDown(getInput(), { key: 'Enter' });
+
+    await waitFor(() => expect(toastErrors.length).toBeGreaterThan(0));
+    expect(toastErrors.some((m) => m.includes('open the terminal'))).toBe(true);
+    expect(getInput().value).toBe('summarize this doc');
+    expect(recordAskedAiSpy).not.toHaveBeenCalled();
     expect(dispatchCalls).toHaveLength(0);
   });
 
@@ -890,6 +948,18 @@ describe('BottomComposer (failure + defensive guards)', () => {
     await waitFor(() => expect(getInput().value).toBe(''));
     expect(dispatchCalls).toHaveLength(1);
     expect(toastErrors).toHaveLength(0);
+  });
+
+  test('an unsuccessful ({ok:false}) dispatch does not record the Ask-AI onboarding step', async () => {
+    dispatchImpl = () => Promise.resolve({ ok: false });
+
+    await renderComposer();
+    fireEvent.change(getInput(), { target: { value: 'condense this doc' } });
+    fireEvent.click(screen.getByTestId('ask-ai-send'));
+
+    await waitFor(() => expect(dispatchCalls).toHaveLength(1));
+    await waitFor(() => expect(getInput().value).toBe(''));
+    expect(recordAskedAiSpy).not.toHaveBeenCalled();
   });
 
   test('a null build result surfaces a toast instead of a silent no-op', async () => {
