@@ -171,6 +171,53 @@ describe('GET /api/search', () => {
     }
   });
 
+  test('snippet truncated mid-emoji carries no lone surrogate', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-search-'));
+    try {
+      // buildSearchSnippet cuts the snippet at `matchIndex + query.length + 120`
+      // code units. The filler run is sized so that boundary falls between the two
+      // UTF-16 halves of the emoji, which is what leaves a lone surrogate.
+      const content = `# E\n\ncrdt${'a'.repeat(119)}😀 tail text follows here\n`;
+      writeFileSync(join(dir, 'emoji.md'), content, 'utf-8');
+
+      const result = await callSearch(dir, '/api/search?query=crdt&intent=full_text');
+      expect(result.status).toBe(200);
+      const body = JSON.parse(result.body) as { results?: Array<{ snippet?: string }> };
+      const snippet = body.results?.[0]?.snippet ?? '';
+      expect(snippet.length).toBeGreaterThan(0);
+      // A lone surrogate is not encodable as UTF-8, so a round-trip through the
+      // wire encoding (what stdio serialization does) replaces it and diverges.
+      // Well-formed snippets round-trip unchanged. This is the failure strict
+      // JSON-RPC clients hit, without coupling the test to the fix's mechanism.
+      expect(Buffer.from(snippet, 'utf8').toString('utf8')).toBe(snippet);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('snippet truncated at the start boundary carries no lone low surrogate', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-search-'));
+    try {
+      // The other boundary: buildSearchSnippet also cuts at `matchIndex - 80`,
+      // which can split an emoji and leave a lone LOW surrogate at the snippet
+      // start (the regex's second arm). Layout: `# E\n\n` (5) + emoji (2) + 78
+      // filler + a space puts the emoji halves across code units 5/6 and the
+      // `crdt` token at index 86, so `start = 86 - 80 = 6` lands on the emoji low
+      // half. crdt must be its own token, else the token-prefix search finds no match.
+      const content = `# E\n\n😀${'a'.repeat(78)} crdt tail text follows here to pad it out\n`;
+      writeFileSync(join(dir, 'emoji-start.md'), content, 'utf-8');
+
+      const result = await callSearch(dir, '/api/search?query=crdt&intent=full_text');
+      expect(result.status).toBe(200);
+      const body = JSON.parse(result.body) as { results?: Array<{ snippet?: string }> };
+      const snippet = body.results?.[0]?.snippet ?? '';
+      expect(snippet.length).toBeGreaterThan(0);
+      expect(Buffer.from(snippet, 'utf8').toString('utf8')).toBe(snippet);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test('supports POST bodies for shared search clients', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ok-search-'));
     try {

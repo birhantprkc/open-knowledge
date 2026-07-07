@@ -15525,7 +15525,15 @@ export function createApiExtension(options: ApiExtensionOptions): Extension {
     const end = Math.min(content.length, index + normalizedQuery.length + 120);
     const prefix = start > 0 ? '…' : '';
     const suffix = end < content.length ? '…' : '';
-    return `${prefix}${content.slice(start, end).replace(/\s+/g, ' ').trim()}${suffix}`;
+    // slice() cuts on UTF-16 code units, so a boundary landing mid-emoji leaves a
+    // lone surrogate. Replace any unpaired surrogate with U+FFFD so strict JSON-RPC
+    // clients (Rust / pydantic parsers) don't reject the response as invalid UTF-8.
+    // (String.toWellFormed() would do this but needs the es2024 lib in every consumer.)
+    const snippet = `${prefix}${content.slice(start, end).replace(/\s+/g, ' ').trim()}${suffix}`;
+    return snippet.replace(
+      /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g,
+      '\uFFFD',
+    );
   }
 
   function parseSearchIntent(value: unknown): WorkspaceSearchIntent {
