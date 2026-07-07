@@ -102,6 +102,20 @@ describe('buildCommitAttribution', () => {
       'Co-authored-by: octocat <1+octocat@users.noreply.github.com>',
     ]);
   });
+
+  test('does not credit sync automation as coauthors', () => {
+    const attribution = buildCommitAttribution({
+      commitAuthors: [
+        { name: 'Inkeep OSS Sync', email: 'oss-sync@inkeep.com' },
+        { name: 'Inkeep Public PR Bridge', email: 'public-pr-bridge@inkeep.com' },
+      ],
+      fallbackAuthor: { name: 'octocat', email: '1+octocat@users.noreply.github.com' },
+    });
+
+    expect(attribution.trailers).toEqual([
+      'Co-authored-by: octocat <1+octocat@users.noreply.github.com>',
+    ]);
+  });
 });
 
 describe('bridgeCommitSubject', () => {
